@@ -1,0 +1,18 @@
+.POSIX:
+
+VERSION = 0.0.1
+PREFIX = /usr/local
+
+CC = g++
+PKG_CONFIG = pkg-config
+
+SRC = cbase16.cpp
+
+all: cbase16
+
+cbase16:
+	$(CC) $(SRC) `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2` -o $@
+	chmod 755 $@
+
+clean:
+	rm -f cbase16
