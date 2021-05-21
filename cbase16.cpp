@@ -19,7 +19,7 @@ void
 clone(std::string source)
 {
 	std::ifstream file(source);
-	if (file.good()) {
+	if (file.is_open()) {
 		YAML::Node file = YAML::LoadFile(source);
 
 		std::vector<std::string> token_key;
@@ -37,6 +37,7 @@ clone(std::string source)
 		std::cerr << "error: cannot read " << source << std::endl;
 		exit(1);
 	}
+	file.close();
 }
 
 void
@@ -57,6 +58,7 @@ emit_source(void) {
 		std::cerr << "error: fail to write source.yaml to current directory";
 		exit(1);
 	}
+	file.close();
 }
 
 int
