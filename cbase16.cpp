@@ -55,6 +55,7 @@ emit_source(void) {
 		file << source.c_str();
 	} else {
 		std::cerr << "error: fail to write source.yaml to current directory";
+		exit(1);
 	}
 }
 
