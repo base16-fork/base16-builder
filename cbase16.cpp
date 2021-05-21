@@ -16,7 +16,7 @@ do_clone(const char *path, const char *url)
 }
 
 void
-clone(std::string source)
+clone(std::string dir, std::string source)
 {
 	std::ifstream file(source);
 	if (file.is_open()) {
@@ -31,7 +31,7 @@ clone(std::string source)
 		}
 
 		for (int i = 0; i < token_key.size(); ++i) {
-			do_clone(token_key[i].c_str(), token_value[i].c_str());
+			do_clone((dir + token_key[i]).c_str(), token_value[i].c_str());
 		}
 	} else {
 		std::cerr << "error: cannot read " << source << std::endl;
@@ -65,6 +65,9 @@ int
 main(int argc, char *argv[])
 {
 	emit_source();
+	clone("./sources/", "sources.yaml");
+	clone("./schemes/", "sources/schemes/list.yaml");
+	clone("./templates/", "sources/templates/list.yaml");
 
 	return 0;
 }
