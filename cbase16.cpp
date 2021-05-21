@@ -34,13 +34,34 @@ clone(std::string source)
 			do_clone(token_key[i].c_str(), token_value[i].c_str());
 		}
 	} else {
-		std::cerr << "error: cannot read " << source << ".yaml" << std::endl;
+		std::cerr << "error: cannot read " << source << std::endl;
 		exit(1);
+	}
+}
+
+void
+emit_source(void) {
+	std::ofstream file("sources.yaml");
+
+	if (file.is_open()) {
+		YAML::Emitter source;
+		source << YAML::BeginMap;
+		source << YAML::Key << "schemes";
+		source << YAML::Value << "https://github.com/chriskempson/base16-schemes-source.git";
+		source << YAML::Key << "templates";
+		source << YAML::Value << "https://github.com/chriskempson/base16-templates-source.git";
+		source << YAML::EndMap;
+
+		file << source.c_str();
+	} else {
+		std::cerr << "error: fail to write source.yaml to current directory";
 	}
 }
 
 int
 main(int argc, char *argv[])
 {
+	emit_source();
+
 	return 0;
 }
