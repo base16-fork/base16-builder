@@ -5,17 +5,18 @@
 #include <fstream>
 #include <iostream>
 
-int fetch_progress(const git_transfer_progress *stats, void *payload)
+int
+fetch_progress(const git_transfer_progress *stats, void *payload)
 {
-	int fetch_percent = stats->received_objects / stats->total_objects * 100;
+	int fetch_percent =
+		stats->received_objects / stats->total_objects * 100;
 	int index_percent = stats->indexed_objects / stats->total_objects * 100;
 	int kbytes = stats->received_bytes / 1024;
 
 	printf("\rFetch progress: network %d%% (%d kb, %d/%d) / index %d%% (%d/%d)",
-	       fetch_percent, kbytes,
-	       stats->received_objects, stats->total_objects,
-	       index_percent,
-	       stats->indexed_objects, stats->total_objects);
+	       fetch_percent, kbytes, stats->received_objects,
+	       stats->total_objects, index_percent, stats->indexed_objects,
+	       stats->total_objects);
 
 	fflush(stdout);
 
@@ -28,7 +29,8 @@ int fetch_progress(const git_transfer_progress *stats, void *payload)
 }
 
 void
-checkout_progress(const char *path, std::size_t cur, std::size_t tot, void *payload)
+checkout_progress(const char *path, std::size_t cur, std::size_t tot,
+                  void *payload)
 {
 	int percent = cur / tot * 100;
 	printf("\rCheckout progress: %d%% (%zu/%zu)", percent, cur, tot);
@@ -67,15 +69,18 @@ clone(std::string dir, std::string source)
 		std::vector<std::string> token_key;
 		std::vector<std::string> token_value;
 
-		for (YAML::const_iterator it = file.begin(); it != file.end(); ++it) {
+		for (YAML::const_iterator it = file.begin(); it != file.end();
+		     ++it) {
 			token_key.push_back(it->first.as<std::string>());
 			token_value.push_back(it->second.as<std::string>());
 		}
 
 		#pragma omp parallel for
 		for (int i = 0; i < token_key.size(); ++i) {
-			printf("Cloning %s (%s):\n", token_key[i].c_str(), token_value[i].c_str());
-			do_clone((dir + token_key[i]).c_str(), token_value[i].c_str());
+			printf("Cloning %s (%s):\n", token_key[i].c_str(),
+			       token_value[i].c_str());
+			do_clone((dir + token_key[i]).c_str(),
+			         token_value[i].c_str());
 			std::cout << std::endl;
 		}
 	} else {
@@ -86,21 +91,25 @@ clone(std::string dir, std::string source)
 }
 
 void
-emit_source(void) {
+emit_source(void)
+{
 	std::ofstream file("sources.yaml");
 
 	if (file.is_open()) {
 		YAML::Emitter source;
 		source << YAML::BeginMap;
 		source << YAML::Key << "schemes";
-		source << YAML::Value << "https://github.com/chriskempson/base16-schemes-source.git";
+		source << YAML::Value
+		       << "https://github.com/chriskempson/base16-schemes-source.git";
 		source << YAML::Key << "templates";
-		source << YAML::Value << "https://github.com/chriskempson/base16-templates-source.git";
+		source << YAML::Value
+		       << "https://github.com/chriskempson/base16-templates-source.git";
 		source << YAML::EndMap;
 
 		file << source.c_str();
 	} else {
-		std::cerr << "error: fail to write source.yaml to current directory";
+		std::cerr
+			<< "error: fail to write source.yaml to current directory";
 		exit(1);
 	}
 	file.close();
@@ -115,9 +124,13 @@ main(int argc, char *argv[])
 	#pragma omp parallel sections
 	{
 		#pragma omp section
-		{ clone("./schemes/", "sources/schemes/list.yaml"); }
+		{
+			clone("./schemes/", "sources/schemes/list.yaml");
+		}
 		#pragma omp section
-		{ clone("./templates/", "sources/templates/list.yaml"); }
+		{
+			clone("./templates/", "sources/templates/list.yaml");
+		}
 	}
 
 	return 0;
