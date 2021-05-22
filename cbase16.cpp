@@ -2,6 +2,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <vector>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 
@@ -115,8 +116,8 @@ emit_source(void)
 	file.close();
 }
 
-int
-main(int argc, char *argv[])
+void
+update(void)
 {
 	emit_source();
 	clone("./sources/", "sources.yaml");
@@ -131,6 +132,25 @@ main(int argc, char *argv[])
 		{
 			clone("./templates/", "sources/templates/list.yaml");
 		}
+	}
+}
+
+int
+main(int argc, char *argv[])
+{
+	if (argc == 1) {
+		std::cerr << "error: empty command" << std::endl;
+		return 1;
+	} else if (argc > 2) {
+		std::cerr << "error: too many commands" << std::endl;
+		return 1;
+	}
+
+	if (strcmp(argv[1], "update") == 0) {
+		update();
+	} else {
+		std::cerr << "error: invalid command" << std::endl;
+		return 1;
 	}
 
 	return 0;
