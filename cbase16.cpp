@@ -1,6 +1,8 @@
 #include <git2.h>
 #include <yaml-cpp/yaml.h>
+#include <boost/filesystem.hpp>
 
+#include <map>
 #include <vector>
 #include <cstring>
 #include <fstream>
@@ -24,6 +26,7 @@ static void checkout_progress(const char *, std::size_t, std::size_t, void *);
 static int do_clone(const char *, const char *);
 static void clone(std::string, std::string);
 static void emit_source(void);
+static std::vector<Template> get_templates(void);
 static void update(void);
 
 int
@@ -153,6 +156,44 @@ update(void)
 			clone("./templates/", "sources/templates/list.yaml");
 		}
 	}
+}
+
+std::vector<Template>
+get_templates(void)
+{
+	std::vector<Template> templates;
+
+	for (boost::filesystem::directory_entry &entry :
+	     boost::filesystem::directory_iterator("templates")) {
+		std::string config_file =
+			entry.path().string() + "/templates/config.yaml";
+		std::string template_file =
+			entry.path().string() + "/templates/default.mustache";
+
+		Template tmp;
+		YAML::Node config = YAML::LoadFile(config_file);
+		std::ifstream templet(template_file);
+
+		for (YAML::const_iterator it = config.begin();
+		     it != config.end(); ++it) {
+			YAML::Node node = config[it->first.as<std::string>()];
+			if (node["extension"].Type() != YAML::NodeType::Null)
+				tmp.extension =
+					node["extension"].as<std::string>();
+			else
+				tmp.extension = "";
+
+			tmp.output = node["output"].as<std::string>();
+		}
+
+		tmp.data = std::string(std::istreambuf_iterator<char>(templet),
+		                       std::istreambuf_iterator<char>());
+
+		templates.push_back(tmp);
+		templet.close();
+	}
+
+	return templates;
 }
 
 int

@@ -8,7 +8,8 @@ PKG_CONFIG = pkg-config
 
 BCFLAGS = $(CFLAGS)
 BCPPFLAGS = $(BCFLAGS)
-BLDFLAGS = `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2`
+BLDFLAGS = `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2` \
+	   "-lboost_filesystem"
 SRC = cbase16.cpp
 
 all: cbase16
