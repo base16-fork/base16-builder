@@ -6,6 +6,19 @@
 #include <fstream>
 #include <iostream>
 
+struct Template {
+	std::string data;
+	std::string extension;
+	std::string output;
+};
+
+struct Scheme {
+	std::string slug;
+	std::string name;
+	std::string author;
+	std::map<std::string, std::string> colors;
+};
+
 int
 fetch_progress(const git_transfer_progress *stats, void *payload)
 {

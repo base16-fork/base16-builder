@@ -24,3 +24,5 @@ cbase16: options
 
 clean:
 	rm -f cbase16
+
+.PHONY: all options cbase16 clean
