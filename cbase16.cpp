@@ -72,6 +72,7 @@ clone(std::string dir, std::string source)
 			token_value.push_back(it->second.as<std::string>());
 		}
 
+		#pragma omp parallel for
 		for (int i = 0; i < token_key.size(); ++i) {
 			printf("Cloning %s (%s):\n", token_key[i].c_str(), token_value[i].c_str());
 			do_clone((dir + token_key[i]).c_str(), token_value[i].c_str());
@@ -110,8 +111,14 @@ main(int argc, char *argv[])
 {
 	emit_source();
 	clone("./sources/", "sources.yaml");
-	clone("./schemes/", "sources/schemes/list.yaml");
-	clone("./templates/", "sources/templates/list.yaml");
+
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{ clone("./schemes/", "sources/schemes/list.yaml"); }
+		#pragma omp section
+		{ clone("./templates/", "sources/templates/list.yaml"); }
+	}
 
 	return 0;
 }

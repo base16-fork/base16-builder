@@ -7,11 +7,12 @@ CC = g++
 PKG_CONFIG = pkg-config
 
 SRC = cbase16.cpp
+BLDFLAGS = `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2`
 
 all: cbase16
 
 cbase16:
-	$(CC) $(SRC) `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2` -o $@
+	$(CC) $(SRC) $(BLDFLAGS) -fopenmp -o $@
 	chmod 755 $@
 
 clean:
