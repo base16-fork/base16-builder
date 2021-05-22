@@ -19,6 +19,13 @@ struct Scheme {
 	std::map<std::string, std::string> colors;
 };
 
+static int fetch_progress(const git_transfer_progress, void *);
+static void checkout_progress(const char *, std::size_t, std::size_t, void *);
+static int do_clone(const char *, const char *);
+static void clone(std::string, std::string);
+static void emit_source(void);
+static void update(void);
+
 int
 fetch_progress(const git_transfer_progress *stats, void *payload)
 {
