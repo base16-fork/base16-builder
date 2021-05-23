@@ -27,6 +27,7 @@ static int do_clone(const char *, const char *);
 static void clone(std::string, std::string);
 static void emit_source(void);
 static std::vector<Template> get_templates(void);
+static std::vector<Scheme> get_schemes(void);
 static void update(void);
 
 int
@@ -194,6 +195,46 @@ get_templates(void)
 	}
 
 	return templates;
+}
+
+std::vector<Scheme>
+get_schemes(void)
+{
+	std::vector<Scheme> schemes;
+
+	for (boost::filesystem::directory_entry &dir :
+	     boost::filesystem::directory_iterator("schemes")) {
+		for (boost::filesystem::directory_entry &file :
+		     boost::filesystem::directory_iterator(dir)) {
+			if (boost::filesystem::is_regular_file(file) &&
+			    file.path().extension() == ".yaml") {
+				Scheme tmp;
+				YAML::Node node =
+					YAML::LoadFile(file.path().string());
+
+				tmp.slug = file.path().stem().string();
+				for (YAML::const_iterator it = node.begin();
+				     it != node.end(); ++it) {
+					std::string key =
+						it->first.as<std::string>();
+					std::string value =
+						it->second.as<std::string>();
+
+					if (key.compare("scheme") == 0)
+						tmp.name = value;
+					else if (key.compare("author") == 0)
+						tmp.author = value;
+					else
+						tmp.colors.insert(
+							{ key, value });
+				}
+
+				schemes.push_back(tmp);
+			}
+		}
+	}
+
+	return schemes;
 }
 
 int
