@@ -3,11 +3,9 @@
 VERSION = 0.0.1
 PREFIX = /usr/local
 
-CC = g++
 PKG_CONFIG = pkg-config
 
-BCFLAGS = $(CFLAGS)
-BCPPFLAGS = $(BCFLAGS)
+BCXXFLAGS = $(CFLAGS) $(CXXFLAGS) --std=gnu++17 -fopenmp
 BLDFLAGS = `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2` \
 	   "-lboost_filesystem"
 SRC = cbase16.cpp
@@ -16,11 +14,11 @@ all: cbase16
 
 options:
 	@echo cbase16 build options:
-	@echo "CPPFLAGS = $(BCPPFLAGS)"
+	@echo "CPPFLAGS = $(BCXXFLAGS)"
 	@echo "LDFLAGS  = $(BLDFLAGS)"
-	@echo "CC       = $(CC)"
+	@echo "CXX      = $(CXX)"
 cbase16: options
-	$(CC) $(SRC) $(BLDFLAGS) -fopenmp -o $@
+	$(CXX) $(SRC) $(BLDFLAGS) $(BCXXFLAGS) -o $@
 	chmod 755 $@
 
 clean:
