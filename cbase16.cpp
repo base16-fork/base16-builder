@@ -27,6 +27,9 @@ static void clone(std::string, std::string);
 static void emit_source(void);
 static std::vector<Template> get_templates(void);
 static std::vector<Scheme> get_schemes(void);
+static std::vector<int> hex_to_rgb(std::string);
+static void replace_all(std::string&, const std::string&, const std::string&);
+static void build(void);
 static void update(void);
 
 int
@@ -180,6 +183,134 @@ get_schemes(void)
 	return schemes;
 }
 
+std::vector<int>
+hex_to_rgb(std::string hex)
+{
+	std::vector<int> rgb(3);
+	std::stringstream ss;
+	std::string str;
+
+	int size = hex.size();
+
+	for (int i = 0; i < 3; i++) {
+		if (hex.size() == 6)
+			str = hex.substr(i * 2, 2);
+		else
+			break;
+
+		ss << std::hex << str;
+		ss >> rgb[i];
+		ss.clear();
+	}
+
+	return rgb;
+}
+
+void
+replace_all(std::string &str, const std::string &from, const std::string &to)
+{
+	if (from.empty())
+		return;
+	size_t start_pos = 0;
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length();
+	}
+}
+
+void
+build(void)
+{
+	boost::filesystem::create_directory("output");
+	#pragma omp parallel for
+	for (Scheme scheme : get_schemes()) {
+		#pragma omp parallel for
+		for (Template templet : get_templates()) {
+			std::map<std::string, std::string> data;
+			data["scheme-slug"] = scheme.slug;
+			data["scheme-name"] = scheme.name;
+			data["scheme-author"] = scheme.author;
+			for (auto &[base, color] : scheme.colors) {
+				std::vector<std::string> hex = {
+					color.substr(0, 2), color.substr(2, 2),
+					color.substr(4, 2)
+				};
+				std::vector<int> rgb = hex_to_rgb(color);
+
+				data[base + "-hex-r"] = hex[0];
+				data[base + "-rgb-r"] = std::to_string(rgb[0]);
+				data[base + "-dec-r"] = std::to_string(
+					(long double)rgb[0] / 255);
+
+				replace_all(templet.data,
+				            "{{" + base + "-hex-r" + "}}",
+				            data[base + "-hex-r"]);
+				replace_all(templet.data,
+				            "{{" + base + "-rgb-r" + "}}",
+				            data[base + "-rgb-r"]);
+				replace_all(templet.data,
+				            "{{" + base + "-dec-r" + "}}",
+				            data[base + "-dec-r"]);
+
+				data[base + "-hex-g"] = hex[1];
+				data[base + "-rgb-g"] = std::to_string(rgb[1]);
+				data[base + "-dec-g"] = std::to_string(
+					(long double)rgb[1] / 255);
+
+				replace_all(templet.data,
+				            "{{" + base + "-hex-g" + "}}",
+				            data[base + "-hex-g"]);
+				replace_all(templet.data,
+				            "{{" + base + "-rgb-g" + "}}",
+				            data[base + "-rgb-g"]);
+				replace_all(templet.data,
+				            "{{" + base + "-dec-g" + "}}",
+				            data[base + "-dec-g"]);
+
+				data[base + "-hex-b"] = hex[2];
+				data[base + "-rgb-b"] = std::to_string(rgb[2]);
+				data[base + "-dec-b"] = std::to_string(
+					(long double)rgb[2] / 255);
+
+				replace_all(templet.data,
+				            "{{" + base + "-hex-b" + "}}",
+				            data[base + "-hex-b"]);
+				replace_all(templet.data,
+				            "{{" + base + "-rgb-b" + "}}",
+				            data[base + "-rgb-b"]);
+				replace_all(templet.data,
+				            "{{" + base + "-dec-b" + "}}",
+				            data[base + "-dec-b"]);
+
+				data[base + "-hex"] = color;
+				data[base + "-hex-bgr"] =
+					hex[0] + hex[1] + hex[2];
+
+				replace_all(templet.data,
+				            "{{" + base + "-hex" + "}}",
+				            data[base + "-hex"]);
+				replace_all(templet.data,
+				            "{{" + base + "-hex-bgr" + "}}",
+				            data[base + "-hex-bgr"]);
+			}
+
+			replace_all(templet.data, "{{scheme-name}}",
+			            scheme.name);
+			replace_all(templet.data, "{{scheme-author}}",
+			            scheme.name);
+
+			std::string output_dir =
+				"output/" + templet.name + "/" + templet.output;
+			boost::filesystem::create_directories(output_dir);
+			std::ofstream output_file(output_dir + "/base16-" +
+			                          scheme.slug +
+			                          templet.extension);
+			output_file << templet.data << std::endl;
+			output_file.close();
+		}
+	}
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -193,6 +324,8 @@ main(int argc, char *argv[])
 
 	if (strcmp(argv[1], "update") == 0) {
 		update();
+	} else if (strcmp(argv[1], "build") == 0) {
+		build();
 	} else {
 		std::cerr << "error: invalid command" << std::endl;
 		return 1;

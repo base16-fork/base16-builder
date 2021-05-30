@@ -2,5 +2,6 @@ cbase16
 sources.yaml
 templates/
 schemes/
+output/
 .cache/
 compile_commands.json
