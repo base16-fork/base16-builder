@@ -9,6 +9,7 @@
 #include <iostream>
 
 struct Template {
+	std::string name;
 	std::string data;
 	std::string extension;
 	std::string output;
@@ -116,6 +117,7 @@ get_templates(void)
 		YAML::Node config = YAML::LoadFile(config_file);
 		std::ifstream templet(template_file);
 
+		tmp.name = entry.path().stem().string();
 		for (YAML::const_iterator it = config.begin();
 		     it != config.end(); ++it) {
 			YAML::Node node = config[it->first.as<std::string>()];
