@@ -221,7 +221,6 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 void
 build(void)
 {
-	boost::filesystem::create_directory("output");
 	#pragma omp parallel for
 	for (Scheme scheme : get_schemes()) {
 		#pragma omp parallel for
