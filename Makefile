@@ -6,8 +6,7 @@ PREFIX = /usr/local
 PKG_CONFIG = pkg-config
 
 BCXXFLAGS = $(CFLAGS) $(CXXFLAGS) --std=gnu++17 -fopenmp
-BLDFLAGS = `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2` \
-	   "-lboost_filesystem"
+BLDFLAGS = `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2`
 SRC = cbase16.cpp
 
 all: cbase16

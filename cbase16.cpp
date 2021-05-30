@@ -1,8 +1,8 @@
 #include <git2.h>
 #include <yaml-cpp/yaml.h>
-#include <boost/filesystem.hpp>
 
 #include <map>
+#include <filesystem>
 #include <vector>
 #include <cstring>
 #include <fstream>
@@ -109,8 +109,8 @@ get_templates(void)
 {
 	std::vector<Template> templates;
 
-	for (boost::filesystem::directory_entry &entry :
-	     boost::filesystem::directory_iterator("templates")) {
+	for (std::filesystem::directory_entry entry :
+	     std::filesystem::directory_iterator("templates")) {
 		std::string config_file =
 			entry.path().string() + "/templates/config.yaml";
 		std::string template_file =
@@ -148,11 +148,11 @@ get_schemes(void)
 {
 	std::vector<Scheme> schemes;
 
-	for (boost::filesystem::directory_entry &dir :
-	     boost::filesystem::directory_iterator("schemes")) {
-		for (boost::filesystem::directory_entry &file :
-		     boost::filesystem::directory_iterator(dir)) {
-			if (boost::filesystem::is_regular_file(file) &&
+	for (std::filesystem::directory_entry dir :
+	     std::filesystem::directory_iterator("schemes")) {
+		for (std::filesystem::directory_entry file :
+		     std::filesystem::directory_iterator(dir)) {
+			if (std::filesystem::is_regular_file(file) &&
 			    file.path().extension() == ".yaml") {
 				Scheme tmp;
 				YAML::Node node =
@@ -300,7 +300,7 @@ build(void)
 
 			std::string output_dir =
 				"output/" + templet.name + "/" + templet.output;
-			boost::filesystem::create_directories(output_dir);
+			std::filesystem::create_directories(output_dir);
 			std::ofstream output_file(output_dir + "/base16-" +
 			                          scheme.slug +
 			                          templet.extension);
