@@ -192,7 +192,7 @@ hex_to_rgb(std::string hex)
 
 	int size = hex.size();
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; ++i) {
 		if (hex.size() == 6)
 			str = hex.substr(i * 2, 2);
 		else
