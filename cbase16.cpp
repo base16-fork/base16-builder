@@ -22,15 +22,15 @@ struct Scheme {
 	std::map<std::string, std::string> colors;
 };
 
-static int do_clone(const char *, const char *);
-static void clone(std::string, std::string);
-static void emit_source(void);
-static std::vector<Template> get_templates(void);
-static std::vector<Scheme> get_schemes(void);
-static std::vector<int> hex_to_rgb(std::string);
-static void replace_all(std::string&, const std::string&, const std::string&);
-static void build(void);
-static void update(void);
+int do_clone(const char *, const char *);
+void clone(std::string, std::string);
+void emit_source(void);
+void update(void);
+std::vector<Template> get_templates(void);
+std::vector<Scheme> get_schemes(void);
+std::vector<int> hex_to_rgb(std::string);
+void replace_all(std::string&, const std::string&, const std::string&);
+void build(void);
 
 int
 do_clone(const char *path, const char *url)
