@@ -1,0 +1,20 @@
+#compdef cbase16
+
+(( $+functions[_cbase16_commands] )) ||
+_cbase16_commmands() {
+	local -a _cbase16_commands
+	_cbase16_commands=(
+		'update:fetch all necessary sources for building'
+		'build:generate colorscheme templates'
+		'help:display usage message'
+	)
+
+	if (( CURRENT == 1 )); then
+		_describe "command" _cbase16_commands || compadd "$@"
+	else
+		_message "no more available options"
+	fi
+}
+
+_arguments -s \
+	'*::cbase16 command:_cbase16_commmands'
