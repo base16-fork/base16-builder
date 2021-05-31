@@ -2,10 +2,12 @@
 #include <yaml-cpp/yaml.h>
 
 #include <map>
+#include <algorithm>
 #include <filesystem>
 #include <vector>
 #include <cstring>
 #include <fstream>
+#include <unistd.h>
 #include <iostream>
 
 struct Template {
@@ -22,6 +24,9 @@ struct Scheme {
 	std::map<std::string, std::string> colors;
 };
 
+std::vector<std::string> opt_scheme;
+std::vector<std::string> opt_template;
+
 int do_clone(const char *, const char *);
 void clone(std::string, std::string);
 void emit_source(void);
@@ -29,7 +34,7 @@ void update(void);
 std::vector<Template> get_templates(void);
 std::vector<Scheme> get_schemes(void);
 std::vector<int> hex_to_rgb(std::string);
-void replace_all(std::string&, const std::string&, const std::string&);
+void replace_all(std::string &, const std::string &, const std::string &);
 void build(void);
 
 int
@@ -58,7 +63,7 @@ clone(std::string dir, std::string source)
 			token_value.push_back(it->second.as<std::string>());
 		}
 
-		#pragma omp parallel for
+#pragma omp parallel for
 		for (int i = 0; i < token_key.size(); ++i) {
 			do_clone((dir + token_key[i]).c_str(),
 			         token_value[i].c_str());
@@ -193,7 +198,7 @@ hex_to_rgb(std::string hex)
 	if (hex.size() != 6)
 		return rgb;
 
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (int i = 0; i < 3; ++i) {
 		str = hex.substr(i * 2, 2);
 		ss << std::hex << str;
@@ -219,10 +224,20 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 void
 build(void)
 {
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (Scheme scheme : get_schemes()) {
-		#pragma omp parallel for
+		if (!opt_scheme.empty() &&
+		    std::find(opt_scheme.begin(), opt_scheme.end(),
+		              scheme.slug) == opt_scheme.end())
+			continue;
+
+#pragma omp parallel for
 		for (Template templet : get_templates()) {
+			if (!opt_template.empty() &&
+			    std::find(opt_template.begin(), opt_template.end(),
+			              templet.name) == opt_template.end())
+				continue;
+
 			std::map<std::string, std::string> data;
 			data["scheme-slug"] = scheme.slug;
 			data["scheme-name"] = scheme.name;
@@ -311,24 +326,57 @@ build(void)
 int
 main(int argc, char *argv[])
 {
-	if (argc == 1) {
-		std::cerr << "error: empty command" << std::endl;
-		return 1;
-	} else if (argc > 2) {
-		std::cerr << "error: too many commands" << std::endl;
-		return 1;
-	}
-
-	if (strcmp(argv[1], "update") == 0) {
+	if (std::strcmp(argv[1], "update") == 0) {
 		update();
-	} else if (strcmp(argv[1], "build") == 0) {
+	} else if (std::strcmp(argv[1], "build") == 0) {
+		int opt, index;
+		while ((opt = getopt(argc, argv, "s:t:")) != EOF) {
+			switch (opt) {
+			case 's':
+				index = optind - 1;
+				while (index < argc) {
+					char *next = strdup(argv[index]);
+					index++;
+					if (next[0] != '-') {
+						opt_scheme.push_back(next);
+					} else {
+						break;
+					}
+				}
+				optind = index - 1;
+				break;
+			case 't':
+				index = optind - 1;
+				while (index < argc) {
+					char *next = strdup(argv[index]);
+					index++;
+					if (next[0] != '-') {
+						opt_template.push_back(next);
+					} else {
+						break;
+					}
+				}
+				optind = index - 1;
+				break;
+			}
+		}
 		build();
-	} else if (strcmp(argv[1], "help") == 0) {
-		std::cout << "Usage: cbase16 [command]" << std::endl << std::endl;
+	} else if (std::strcmp(argv[1], "help") == 0) {
+		std::cout << "Usage: cbase16 [command] [options]" << std::endl
+			  << std::endl;
 		std::cout << "Command:" << std::endl;
-		std::cout << "    update -- fetch all necessary sources for building" << std::endl;
-		std::cout << "    build  -- generate colorscheme templates" << std::endl;
-		std::cout << "    help   -- display usage message" << std::endl;
+		std::cout
+			<< "    update -- fetch all necessary sources for building"
+			<< std::endl;
+		std::cout << "    build  -- generate colorscheme templates"
+			  << std::endl;
+		std::cout << "    help   -- display usage message" << std::endl
+			  << std::endl;
+		std::cout << "Options:" << std::endl;
+		std::cout << "    -s -- only build specified schemes"
+			  << std::endl;
+		std::cout << "    -t -- only build specified templates"
+			  << std::endl;
 	} else {
 		std::cerr << "error: invalid command" << std::endl;
 		return 1;

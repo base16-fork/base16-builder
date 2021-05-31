@@ -4,13 +4,18 @@
 
 ## Usage
 
-cbase16 \[command\]
+cbase16 \[command\] \[options\]
 
 Command:
 
 - update: fetch all necessary sources for building
 - build: generate colorscheme templates
 - help: display usage message
+
+Options:
+
+- -s: only build specified schemes
+- -t: only build specified templates
 
 ## Dependency
 
