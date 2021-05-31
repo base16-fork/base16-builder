@@ -40,7 +40,7 @@ $ make uninstall
 ## Manual Installation
 
 After compiling the program by running `make`, place the executable `cbase16`
-in your $PATH. For example, you could also include this directory in $PATH by
+in your `$PATH`. For example, you could also include this directory in `$PATH` by
 adding the following in your profile:
 
 ``` sh
@@ -49,7 +49,7 @@ PATH=$PATH:path/to/cbase16
 
 To get zsh completion working, place the `_cbase16` completion script in your
 fpath. For example, you could add the following to your ~/.zshrc to include the
-directory that contains the `_cbase16` file in your $fpath:
+directory that contains the `_cbase16` file in your `$fpath`:
 
 ``` sh
 fpath=(path/to/cbase16/completion/zsh $fpath)
