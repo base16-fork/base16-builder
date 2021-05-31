@@ -17,7 +17,7 @@ Options:
 - -s: only build specified schemes
 - -t: only build specified templates
 
-## Dependency
+## Dependencies
 
 - libgit2
 - yaml-cpp
