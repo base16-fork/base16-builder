@@ -325,6 +325,12 @@ main(int argc, char *argv[])
 		update();
 	} else if (strcmp(argv[1], "build") == 0) {
 		build();
+	} else if (strcmp(argv[1], "help") == 0) {
+		std::cout << "Usage: cbase16 [command]" << std::endl << std::endl;
+		std::cout << "Command:" << std::endl;
+		std::cout << "    update -- fetch all necessary sources for building" << std::endl;
+		std::cout << "    build  -- generate colorscheme templates" << std::endl;
+		std::cout << "    help   -- display usage message" << std::endl;
 	} else {
 		std::cerr << "error: invalid command" << std::endl;
 		return 1;
