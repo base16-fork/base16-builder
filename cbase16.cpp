@@ -24,8 +24,8 @@ struct Scheme {
 	std::map<std::string, std::string> colors;
 };
 
-std::vector<std::string> opt_scheme;
-std::vector<std::string> opt_template;
+std::vector<std::string> opt_schemes;
+std::vector<std::string> opt_templates;
 
 int do_clone(const char *, const char *);
 void clone(std::string, std::string);
@@ -121,27 +121,27 @@ get_templates(void)
 		std::string template_file =
 			entry.path().string() + "/templates/default.mustache";
 
-		Template tmp;
+		Template t;
 		YAML::Node config = YAML::LoadFile(config_file);
 		std::ifstream templet(template_file);
 
-		tmp.name = entry.path().stem().string();
+		t.name = entry.path().stem().string();
 		for (YAML::const_iterator it = config.begin();
 		     it != config.end(); ++it) {
 			YAML::Node node = config[it->first.as<std::string>()];
 			if (node["extension"].Type() != YAML::NodeType::Null)
-				tmp.extension =
+				t.extension =
 					node["extension"].as<std::string>();
 			else
-				tmp.extension = "";
+				t.extension = "";
 
-			tmp.output = node["output"].as<std::string>();
+			t.output = node["output"].as<std::string>();
 		}
 
-		tmp.data = std::string(std::istreambuf_iterator<char>(templet),
-		                       std::istreambuf_iterator<char>());
+		t.data = std::string(std::istreambuf_iterator<char>(templet),
+		                     std::istreambuf_iterator<char>());
 
-		templates.push_back(tmp);
+		templates.push_back(t);
 		templet.close();
 	}
 
@@ -159,11 +159,11 @@ get_schemes(void)
 		     std::filesystem::directory_iterator(dir)) {
 			if (std::filesystem::is_regular_file(file) &&
 			    file.path().extension() == ".yaml") {
-				Scheme tmp;
+				Scheme s;
 				YAML::Node node =
 					YAML::LoadFile(file.path().string());
 
-				tmp.slug = file.path().stem().string();
+				s.slug = file.path().stem().string();
 				for (YAML::const_iterator it = node.begin();
 				     it != node.end(); ++it) {
 					std::string key =
@@ -172,15 +172,14 @@ get_schemes(void)
 						it->second.as<std::string>();
 
 					if (key.compare("scheme") == 0)
-						tmp.name = value;
+						s.name = value;
 					else if (key.compare("author") == 0)
-						tmp.author = value;
+						s.author = value;
 					else
-						tmp.colors.insert(
-							{ key, value });
+						s.colors.insert({ key, value });
 				}
 
-				schemes.push_back(tmp);
+				schemes.push_back(s);
 			}
 		}
 	}
@@ -225,24 +224,25 @@ void
 build(void)
 {
 #pragma omp parallel for
-	for (Scheme scheme : get_schemes()) {
-		if (!opt_scheme.empty() &&
-		    std::find(opt_scheme.begin(), opt_scheme.end(),
-		              scheme.slug) == opt_scheme.end())
+	for (Scheme s : get_schemes()) {
+		if (!opt_schemes.empty() &&
+		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) ==
+		            opt_schemes.end())
 			continue;
 
 #pragma omp parallel for
-		for (Template templet : get_templates()) {
-			if (!opt_template.empty() &&
-			    std::find(opt_template.begin(), opt_template.end(),
-			              templet.name) == opt_template.end())
+		for (Template t : get_templates()) {
+			if (!opt_templates.empty() &&
+			    std::find(opt_templates.begin(),
+			              opt_templates.end(),
+			              t.name) == opt_templates.end())
 				continue;
 
 			std::map<std::string, std::string> data;
-			data["scheme-slug"] = scheme.slug;
-			data["scheme-name"] = scheme.name;
-			data["scheme-author"] = scheme.author;
-			for (auto &[base, color] : scheme.colors) {
+			data["scheme-slug"] = s.slug;
+			data["scheme-name"] = s.name;
+			data["scheme-author"] = s.author;
+			for (auto &[base, color] : s.colors) {
 				std::vector<std::string> hex = {
 					color.substr(0, 2), color.substr(2, 2),
 					color.substr(4, 2)
@@ -254,13 +254,13 @@ build(void)
 				data[base + "-dec-r"] = std::to_string(
 					(long double)rgb[0] / 255);
 
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-hex-r" + "}}",
 				            data[base + "-hex-r"]);
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-rgb-r" + "}}",
 				            data[base + "-rgb-r"]);
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-dec-r" + "}}",
 				            data[base + "-dec-r"]);
 
@@ -269,13 +269,13 @@ build(void)
 				data[base + "-dec-g"] = std::to_string(
 					(long double)rgb[1] / 255);
 
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-hex-g" + "}}",
 				            data[base + "-hex-g"]);
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-rgb-g" + "}}",
 				            data[base + "-rgb-g"]);
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-dec-g" + "}}",
 				            data[base + "-dec-g"]);
 
@@ -284,13 +284,13 @@ build(void)
 				data[base + "-dec-b"] = std::to_string(
 					(long double)rgb[2] / 255);
 
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-hex-b" + "}}",
 				            data[base + "-hex-b"]);
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-rgb-b" + "}}",
 				            data[base + "-rgb-b"]);
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-dec-b" + "}}",
 				            data[base + "-dec-b"]);
 
@@ -298,26 +298,22 @@ build(void)
 				data[base + "-hex-bgr"] =
 					hex[0] + hex[1] + hex[2];
 
-				replace_all(templet.data,
-				            "{{" + base + "-hex" + "}}",
+				replace_all(t.data, "{{" + base + "-hex" + "}}",
 				            data[base + "-hex"]);
-				replace_all(templet.data,
+				replace_all(t.data,
 				            "{{" + base + "-hex-bgr" + "}}",
 				            data[base + "-hex-bgr"]);
 			}
 
-			replace_all(templet.data, "{{scheme-name}}",
-			            scheme.name);
-			replace_all(templet.data, "{{scheme-author}}",
-			            scheme.name);
+			replace_all(t.data, "{{scheme-name}}", s.name);
+			replace_all(t.data, "{{scheme-author}}", s.name);
 
 			std::string output_dir =
-				"output/" + templet.name + "/" + templet.output;
+				"output/" + t.name + "/" + t.output;
 			std::filesystem::create_directories(output_dir);
 			std::ofstream output_file(output_dir + "/base16-" +
-			                          scheme.slug +
-			                          templet.extension);
-			output_file << templet.data << std::endl;
+			                          s.slug + t.extension);
+			output_file << t.data << std::endl;
 			output_file.close();
 		}
 	}
@@ -337,11 +333,10 @@ main(int argc, char *argv[])
 				while (index < argc) {
 					char *next = strdup(argv[index]);
 					index++;
-					if (next[0] != '-') {
-						opt_scheme.push_back(next);
-					} else {
+					if (next[0] != '-')
+						opt_schemes.push_back(next);
+					else
 						break;
-					}
 				}
 				optind = index - 1;
 				break;
@@ -350,11 +345,10 @@ main(int argc, char *argv[])
 				while (index < argc) {
 					char *next = strdup(argv[index]);
 					index++;
-					if (next[0] != '-') {
-						opt_template.push_back(next);
-					} else {
+					if (next[0] != '-')
+						opt_templates.push_back(next);
+					else
 						break;
-					}
 				}
 				optind = index - 1;
 				break;
