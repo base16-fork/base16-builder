@@ -2,6 +2,7 @@
 
 VERSION = 0.0.1
 PREFIX = /usr/local
+MANPREFIX = $(PREFIX)/share/man
 
 PKG_CONFIG = pkg-config
 
@@ -16,6 +17,7 @@ options:
 	@echo "CPPFLAGS = $(BCXXFLAGS)"
 	@echo "LDFLAGS  = $(BLDFLAGS)"
 	@echo "CXX      = $(CXX)"
+
 cbase16: options
 	$(CXX) $(SRC) $(BLDFLAGS) $(BCXXFLAGS) -o $@
 	chmod 755 $@
@@ -23,4 +25,22 @@ cbase16: options
 clean:
 	rm -f cbase16
 
-.PHONY: all options cbase16 clean
+install:
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp -f cbase16 $(DESTDIR)$(PREFIX)/bin
+	chmod 775 $(DESTDIR)$(PREFIX)/bin/cbase16
+	mkdir -p $(DESTDIR)$(MANPREFIX)/man1
+	sed "s/VERSION/$(VERSION)/g" < cbase16.1 > $(DESTDIR)$(MANPREFIX)/man1/cbase16.1
+	chmod 664 $(DESTDIR)$(MANPREFIX)/man1/cbase16.1
+	mkdir -p $(DESTDIR)$(PREFIX)/share/bash-completion/completions
+	mkdir -p $(DESTDIR)$(PREFIX)/share/zsh/site-functions
+	cp -f completion/bash/cbase16.bash $(DESTDIR)$(PREFIX)/share/bash-completion/completions/cbase16
+	cp -f completion/zsh/_cbase16 $(DESTDIR)$(PREFIX)/share/zsh/site-functions
+
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/cbase16
+	rm -f $(DESTDIR)$(MANPREFIX)/man1/cbase16.1
+	rm -f $(DESTDIR)$(PREFIX)/share/bash-completion/completions/cbase16
+	rm -f $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_cbase16
+
+.PHONY: all options cbase16 clean install uninstall
