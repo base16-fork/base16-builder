@@ -190,14 +190,12 @@ hex_to_rgb(std::string hex)
 	std::stringstream ss;
 	std::string str;
 
-	int size = hex.size();
+	if (hex.size() != 6)
+		return rgb;
 
+	#pragma omp parallel for
 	for (int i = 0; i < 3; ++i) {
-		if (hex.size() == 6)
-			str = hex.substr(i * 2, 2);
-		else
-			break;
-
+		str = hex.substr(i * 2, 2);
 		ss << std::hex << str;
 		ss >> rgb[i];
 		ss.clear();
