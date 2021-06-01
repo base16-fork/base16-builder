@@ -50,8 +50,7 @@ do_clone(const char *path, const char *url)
 void
 clone(std::string dir, std::string source)
 {
-	std::ifstream file(source);
-	if (file.is_open()) {
+	if (std::filesystem::is_regular_file(source)) {
 		YAML::Node file = YAML::LoadFile(source);
 
 		std::vector<std::string> token_key;
@@ -70,7 +69,6 @@ clone(std::string dir, std::string source)
 		std::cerr << "error: cannot read " << source << std::endl;
 		exit(1);
 	}
-	file.close();
 }
 
 void
@@ -116,10 +114,10 @@ get_templates(void)
 		std::string config_file = entry.path().string() + "/templates/config.yaml";
 		std::string template_file = entry.path().string() + "/templates/default.mustache";
 
-		Template t;
 		YAML::Node config = YAML::LoadFile(config_file);
 		std::ifstream templet(template_file);
 
+		Template t;
 		t.name = entry.path().stem().string();
 		for (YAML::const_iterator it = config.begin(); it != config.end(); ++it) {
 			YAML::Node node = config[it->first.as<std::string>()];
@@ -152,9 +150,9 @@ get_schemes(void)
 		     std::filesystem::directory_iterator(dir)) {
 			if (std::filesystem::is_regular_file(file) &&
 			    file.path().extension() == ".yaml") {
-				Scheme s;
 				YAML::Node node = YAML::LoadFile(file.path().string());
 
+				Scheme s;
 				s.slug = file.path().stem().string();
 				for (YAML::const_iterator it = node.begin(); it != node.end();
 				     ++it) {
