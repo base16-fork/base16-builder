@@ -57,16 +57,14 @@ clone(std::string dir, std::string source)
 		std::vector<std::string> token_key;
 		std::vector<std::string> token_value;
 
-		for (YAML::const_iterator it = file.begin(); it != file.end();
-		     ++it) {
+		for (YAML::const_iterator it = file.begin(); it != file.end(); ++it) {
 			token_key.push_back(it->first.as<std::string>());
 			token_value.push_back(it->second.as<std::string>());
 		}
 
 #pragma omp parallel for
 		for (int i = 0; i < token_key.size(); ++i) {
-			do_clone((dir + token_key[i]).c_str(),
-			         token_value[i].c_str());
+			do_clone((dir + token_key[i]).c_str(), token_value[i].c_str());
 		}
 	} else {
 		std::cerr << "error: cannot read " << source << std::endl;
@@ -93,9 +91,7 @@ emit_source(void)
 
 		file << source.c_str();
 	} else {
-		std::cerr
-			<< "error: fail to write source.yaml to current directory"
-			<< std::endl;
+		std::cerr << "error: fail to write source.yaml to current directory" << std::endl;
 		exit(1);
 	}
 	file.close();
@@ -117,22 +113,18 @@ get_templates(void)
 
 	for (std::filesystem::directory_entry entry :
 	     std::filesystem::directory_iterator("templates")) {
-		std::string config_file =
-			entry.path().string() + "/templates/config.yaml";
-		std::string template_file =
-			entry.path().string() + "/templates/default.mustache";
+		std::string config_file = entry.path().string() + "/templates/config.yaml";
+		std::string template_file = entry.path().string() + "/templates/default.mustache";
 
 		Template t;
 		YAML::Node config = YAML::LoadFile(config_file);
 		std::ifstream templet(template_file);
 
 		t.name = entry.path().stem().string();
-		for (YAML::const_iterator it = config.begin();
-		     it != config.end(); ++it) {
+		for (YAML::const_iterator it = config.begin(); it != config.end(); ++it) {
 			YAML::Node node = config[it->first.as<std::string>()];
 			if (node["extension"].Type() != YAML::NodeType::Null)
-				t.extension =
-					node["extension"].as<std::string>();
+				t.extension = node["extension"].as<std::string>();
 			else
 				t.extension = "";
 
@@ -161,16 +153,13 @@ get_schemes(void)
 			if (std::filesystem::is_regular_file(file) &&
 			    file.path().extension() == ".yaml") {
 				Scheme s;
-				YAML::Node node =
-					YAML::LoadFile(file.path().string());
+				YAML::Node node = YAML::LoadFile(file.path().string());
 
 				s.slug = file.path().stem().string();
-				for (YAML::const_iterator it = node.begin();
-				     it != node.end(); ++it) {
-					std::string key =
-						it->first.as<std::string>();
-					std::string value =
-						it->second.as<std::string>();
+				for (YAML::const_iterator it = node.begin(); it != node.end();
+				     ++it) {
+					std::string key = it->first.as<std::string>();
+					std::string value = it->second.as<std::string>();
 
 					if (key.compare("scheme") == 0)
 						s.name = value;
@@ -227,16 +216,14 @@ build(void)
 #pragma omp parallel for
 	for (Scheme s : get_schemes()) {
 		if (!opt_schemes.empty() &&
-		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) ==
-		            opt_schemes.end())
+		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) == opt_schemes.end())
 			continue;
 
 #pragma omp parallel for
 		for (Template t : get_templates()) {
 			if (!opt_templates.empty() &&
-			    std::find(opt_templates.begin(),
-			              opt_templates.end(),
-			              t.name) == opt_templates.end())
+			    std::find(opt_templates.begin(), opt_templates.end(), t.name) ==
+			            opt_templates.end())
 				continue;
 
 			std::map<std::string, std::string> data;
@@ -244,76 +231,59 @@ build(void)
 			data["scheme-name"] = s.name;
 			data["scheme-author"] = s.author;
 			for (auto &[base, color] : s.colors) {
-				std::vector<std::string> hex = {
-					color.substr(0, 2), color.substr(2, 2),
-					color.substr(4, 2)
-				};
+				std::vector<std::string> hex = { color.substr(0, 2),
+					                         color.substr(2, 2),
+					                         color.substr(4, 2) };
 				std::vector<int> rgb = hex_to_rgb(color);
 
 				data[base + "-hex-r"] = hex[0];
 				data[base + "-rgb-r"] = std::to_string(rgb[0]);
-				data[base + "-dec-r"] = std::to_string(
-					(long double)rgb[0] / 255);
+				data[base + "-dec-r"] = std::to_string((long double)rgb[0] / 255);
 
-				replace_all(t.data,
-				            "{{" + base + "-hex-r" + "}}",
+				replace_all(t.data, "{{" + base + "-hex-r" + "}}",
 				            data[base + "-hex-r"]);
-				replace_all(t.data,
-				            "{{" + base + "-rgb-r" + "}}",
+				replace_all(t.data, "{{" + base + "-rgb-r" + "}}",
 				            data[base + "-rgb-r"]);
-				replace_all(t.data,
-				            "{{" + base + "-dec-r" + "}}",
+				replace_all(t.data, "{{" + base + "-dec-r" + "}}",
 				            data[base + "-dec-r"]);
 
 				data[base + "-hex-g"] = hex[1];
 				data[base + "-rgb-g"] = std::to_string(rgb[1]);
-				data[base + "-dec-g"] = std::to_string(
-					(long double)rgb[1] / 255);
+				data[base + "-dec-g"] = std::to_string((long double)rgb[1] / 255);
 
-				replace_all(t.data,
-				            "{{" + base + "-hex-g" + "}}",
+				replace_all(t.data, "{{" + base + "-hex-g" + "}}",
 				            data[base + "-hex-g"]);
-				replace_all(t.data,
-				            "{{" + base + "-rgb-g" + "}}",
+				replace_all(t.data, "{{" + base + "-rgb-g" + "}}",
 				            data[base + "-rgb-g"]);
-				replace_all(t.data,
-				            "{{" + base + "-dec-g" + "}}",
+				replace_all(t.data, "{{" + base + "-dec-g" + "}}",
 				            data[base + "-dec-g"]);
 
 				data[base + "-hex-b"] = hex[2];
 				data[base + "-rgb-b"] = std::to_string(rgb[2]);
-				data[base + "-dec-b"] = std::to_string(
-					(long double)rgb[2] / 255);
+				data[base + "-dec-b"] = std::to_string((long double)rgb[2] / 255);
 
-				replace_all(t.data,
-				            "{{" + base + "-hex-b" + "}}",
+				replace_all(t.data, "{{" + base + "-hex-b" + "}}",
 				            data[base + "-hex-b"]);
-				replace_all(t.data,
-				            "{{" + base + "-rgb-b" + "}}",
+				replace_all(t.data, "{{" + base + "-rgb-b" + "}}",
 				            data[base + "-rgb-b"]);
-				replace_all(t.data,
-				            "{{" + base + "-dec-b" + "}}",
+				replace_all(t.data, "{{" + base + "-dec-b" + "}}",
 				            data[base + "-dec-b"]);
 
 				data[base + "-hex"] = color;
-				data[base + "-hex-bgr"] =
-					hex[0] + hex[1] + hex[2];
+				data[base + "-hex-bgr"] = hex[0] + hex[1] + hex[2];
 
 				replace_all(t.data, "{{" + base + "-hex" + "}}",
 				            data[base + "-hex"]);
-				replace_all(t.data,
-				            "{{" + base + "-hex-bgr" + "}}",
+				replace_all(t.data, "{{" + base + "-hex-bgr" + "}}",
 				            data[base + "-hex-bgr"]);
 			}
 
 			replace_all(t.data, "{{scheme-name}}", s.name);
 			replace_all(t.data, "{{scheme-author}}", s.name);
 
-			std::string output_dir =
-				"output/" + t.name + "/" + t.output;
+			std::string output_dir = "output/" + t.name + "/" + t.output;
 			std::filesystem::create_directories(output_dir);
-			std::ofstream output_file(output_dir + "/base16-" +
-			                          s.slug + t.extension);
+			std::ofstream output_file(output_dir + "/base16-" + s.slug + t.extension);
 			output_file << t.data << std::endl;
 			output_file.close();
 		}
@@ -357,21 +327,14 @@ main(int argc, char *argv[])
 		}
 		build();
 	} else if (std::strcmp(argv[1], "help") == 0) {
-		std::cout << "Usage: cbase16 [command] [options]" << std::endl
-			  << std::endl;
+		std::cout << "Usage: cbase16 [command] [options]" << std::endl << std::endl;
 		std::cout << "Command:" << std::endl;
-		std::cout
-			<< "    update -- fetch all necessary sources for building"
-			<< std::endl;
-		std::cout << "    build  -- generate colorscheme templates"
-			  << std::endl;
-		std::cout << "    help   -- display usage message" << std::endl
-			  << std::endl;
+		std::cout << "    update -- fetch all necessary sources for building" << std::endl;
+		std::cout << "    build  -- generate colorscheme templates" << std::endl;
+		std::cout << "    help   -- display usage message" << std::endl << std::endl;
 		std::cout << "Options:" << std::endl;
-		std::cout << "    -s -- only build specified schemes"
-			  << std::endl;
-		std::cout << "    -t -- only build specified templates"
-			  << std::endl;
+		std::cout << "    -s -- only build specified schemes" << std::endl;
+		std::cout << "    -t -- only build specified templates" << std::endl;
 	} else {
 		std::cerr << "error: invalid command" << std::endl;
 		return 1;
