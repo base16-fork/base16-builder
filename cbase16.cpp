@@ -1,14 +1,14 @@
+#include <algorithm>
+#include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <unistd.h>
+#include <vector>
+
 #include <git2.h>
 #include <yaml-cpp/yaml.h>
-
-#include <map>
-#include <algorithm>
-#include <filesystem>
-#include <vector>
-#include <cstring>
-#include <fstream>
-#include <unistd.h>
-#include <iostream>
 
 struct Template {
 	std::string name;
