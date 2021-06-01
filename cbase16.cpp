@@ -94,7 +94,8 @@ emit_source(void)
 		file << source.c_str();
 	} else {
 		std::cerr
-			<< "error: fail to write source.yaml to current directory";
+			<< "error: fail to write source.yaml to current directory"
+			<< std::endl;
 		exit(1);
 	}
 	file.close();
