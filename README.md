@@ -17,6 +17,21 @@ Options:
 - -s: only build specified schemes
 - -t: only build specified templates
 
+## File Structure
+
+After running `update`, the file structure for the directory under which the
+builder is ran will be structured as follows:
+
+- `/sources.yaml` -- Holds a list of source repositories for schemes and templates
+- `/sources/schemes/list.yaml` -- Holds a list of scheme repositories
+- `/sources/templates/list.yaml` -- Holds a list of template repositories
+- `/schemes/[name]/*.yaml` -- Scheme files
+- `/templates/[name]/templates/*.mustache` -- Template files
+- `/templates/[name]/templates/config.yaml` -- Template configuration file
+
+After running `build`, the generated colorscheme templates will be in the
+`output` directory under the current running directory.
+
 ## Dependencies
 
 - libgit2
