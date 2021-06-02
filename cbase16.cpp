@@ -324,9 +324,8 @@ main(int argc, char *argv[])
 				break;
 			case 'o':
 				opt_output = optarg;
-				opt_output.erase(std::remove(opt_output.begin(), opt_output.end(),
-				                             '/'),
-				                 opt_output.end());
+				if (opt_output[opt_output.length() - 1] == '/')
+					opt_output.pop_back();
 				break;
 			}
 		}
