@@ -63,9 +63,8 @@ clone(std::string dir, std::string source)
 		}
 
 #pragma omp parallel for
-		for (int i = 0; i < token_key.size(); ++i) {
+		for (int i = 0; i < token_key.size(); ++i)
 			do_clone((dir + token_key[i]).c_str(), token_value[i].c_str());
-		}
 	} else {
 		std::cerr << "error: cannot read " << source << std::endl;
 		exit(1);
