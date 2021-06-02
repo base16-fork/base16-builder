@@ -16,6 +16,7 @@ Options:
 
 - -s: only build specified schemes
 - -t: only build specified templates
+- -o: set output directory
 
 ## File Structure
 
@@ -30,7 +31,8 @@ builder is ran will be structured as follows:
 - `/templates/[name]/templates/config.yaml` -- Template configuration file
 
 After running `build`, the generated colorscheme templates will be in the
-`output` directory under the current running directory.
+`output` directory by default unless specified otherwise under the current
+running directory.
 
 ## Dependencies
 

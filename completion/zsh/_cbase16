@@ -6,6 +6,7 @@ _cbase16_build() {
 	_build_options=(
 		'-s:only build specified schemes'
 		'-t:only build specified templates'
+		'-o:set output directory'
 	)
 	_describe "option" _build_options
 }

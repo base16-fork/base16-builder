@@ -26,6 +26,7 @@ struct Scheme {
 
 std::vector<std::string> opt_schemes;
 std::vector<std::string> opt_templates;
+std::string opt_output = "output";
 
 int do_clone(const char *, const char *);
 void clone(std::string, std::string);
@@ -279,7 +280,7 @@ build(void)
 			replace_all(t.data, "{{scheme-name}}", s.name);
 			replace_all(t.data, "{{scheme-author}}", s.name);
 
-			std::string output_dir = "output/" + t.name + "/" + t.output;
+			std::string output_dir = opt_output + "/" + t.name + "/" + t.output;
 			std::filesystem::create_directories(output_dir);
 			std::ofstream output_file(output_dir + "/base16-" + s.slug + t.extension);
 			output_file << t.data << std::endl;
@@ -295,7 +296,7 @@ main(int argc, char *argv[])
 		update();
 	} else if (std::strcmp(argv[1], "build") == 0) {
 		int opt, index;
-		while ((opt = getopt(argc, argv, "s:t:")) != EOF) {
+		while ((opt = getopt(argc, argv, "s:t:o:")) != EOF) {
 			switch (opt) {
 			case 's':
 				index = optind - 1;
@@ -321,6 +322,12 @@ main(int argc, char *argv[])
 				}
 				optind = index - 1;
 				break;
+			case 'o':
+				opt_output = optarg;
+				opt_output.erase(std::remove(opt_output.begin(), opt_output.end(),
+				                             '/'),
+				                 opt_output.end());
+				break;
 			}
 		}
 		build();
@@ -333,6 +340,7 @@ main(int argc, char *argv[])
 		std::cout << "Options:" << std::endl;
 		std::cout << "    -s -- only build specified schemes" << std::endl;
 		std::cout << "    -t -- only build specified templates" << std::endl;
+		std::cout << "    -o -- specify output directory" << std::endl;
 	} else {
 		std::cerr << "error: invalid command" << std::endl;
 		return 1;
