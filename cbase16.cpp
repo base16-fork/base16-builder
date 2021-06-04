@@ -329,12 +329,15 @@ main(int argc, char *argv[])
 			}
 		}
 		build();
+	} else if (std::strcmp(argv[1], "version") == 0) {
+		std::cout << "cbase16-0.1.0" << std::endl;
 	} else if (std::strcmp(argv[1], "help") == 0) {
 		std::cout << "Usage: cbase16 [command] [options]" << std::endl << std::endl;
 		std::cout << "Command:" << std::endl;
-		std::cout << "    update -- fetch all necessary sources for building" << std::endl;
-		std::cout << "    build  -- generate colorscheme templates" << std::endl;
-		std::cout << "    help   -- display usage message" << std::endl << std::endl;
+		std::cout << "    update  -- fetch all necessary sources for building" << std::endl;
+		std::cout << "    build   -- generate colorscheme templates" << std::endl;
+		std::cout << "    version -- display version" << std::endl;
+		std::cout << "    help    -- display usage message" << std::endl << std::endl;
 		std::cout << "Options:" << std::endl;
 		std::cout << "    -s -- only build specified schemes" << std::endl;
 		std::cout << "    -t -- only build specified templates" << std::endl;
