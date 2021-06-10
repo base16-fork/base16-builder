@@ -27,8 +27,8 @@ struct Scheme {
 
 std::vector<std::string> opt_schemes;
 std::vector<std::string> opt_templates;
-std::string opt_output = "output";
-std::string opt_cache_dir;
+std::filesystem::path opt_output = "output";
+std::filesystem::path opt_cache_dir;
 
 int do_clone(const char *, const char *);
 void clone(std::string, std::string);
@@ -66,7 +66,7 @@ clone(std::string dir, std::string source)
 
 #pragma omp parallel for
 		for (int i = 0; i < token_key.size(); ++i)
-			do_clone((opt_cache_dir + dir + token_key[i]).c_str(),
+			do_clone((opt_cache_dir / dir / token_key[i]).c_str(),
 			         token_value[i].c_str());
 	} else {
 		std::cerr << "error: cannot read " << source << std::endl;
@@ -77,7 +77,7 @@ clone(std::string dir, std::string source)
 void
 emit_source(void)
 {
-	std::ofstream file(opt_cache_dir + "/sources.yaml");
+	std::ofstream file(opt_cache_dir / "sources.yaml");
 
 	if (file.is_open()) {
 		YAML::Emitter source;
@@ -102,9 +102,9 @@ void
 update(void)
 {
 	emit_source();
-	clone("/sources/", opt_cache_dir + "/sources.yaml");
-	clone("/schemes/", opt_cache_dir + "/sources/schemes/list.yaml");
-	clone("/templates/", opt_cache_dir + "/sources/templates/list.yaml");
+	clone("sources", opt_cache_dir / "sources.yaml");
+	clone("schemes", opt_cache_dir / "sources" / "schemes" / "list.yaml");
+	clone("templates", opt_cache_dir / "sources" / "templates" / "list.yaml");
 }
 
 std::vector<Template>
@@ -113,9 +113,9 @@ get_templates(void)
 	std::vector<Template> templates;
 
 	for (std::filesystem::directory_entry entry :
-	     std::filesystem::directory_iterator(opt_cache_dir + "/templates")) {
-		std::string config_file = entry.path().string() + "/templates/config.yaml";
-		std::string template_file = entry.path().string() + "/templates/default.mustache";
+	     std::filesystem::directory_iterator(opt_cache_dir / "templates")) {
+		std::string config_file = entry.path() / "templates" / "config.yaml";
+		std::string template_file = entry.path() / "templates" / "default.mustache";
 
 		YAML::Node config = YAML::LoadFile(config_file);
 		std::ifstream templet(template_file);
@@ -148,7 +148,7 @@ get_schemes(void)
 	std::vector<Scheme> schemes;
 
 	for (std::filesystem::directory_entry dir :
-	     std::filesystem::directory_iterator(opt_cache_dir + "/schemes")) {
+	     std::filesystem::directory_iterator(opt_cache_dir / "schemes")) {
 		for (std::filesystem::directory_entry file :
 		     std::filesystem::directory_iterator(dir)) {
 			if (std::filesystem::is_regular_file(file) &&
@@ -282,7 +282,7 @@ build(void)
 			replace_all(t.data, "{{scheme-name}}", s.name);
 			replace_all(t.data, "{{scheme-author}}", s.name);
 
-			std::string output_dir = opt_output + "/" + t.name + "/" + t.output;
+			std::string output_dir = opt_output / t.name / t.output;
 			std::filesystem::create_directories(output_dir);
 			std::ofstream output_file(output_dir + "/base16-" + s.slug + t.extension);
 			output_file << t.data << std::endl;
@@ -295,9 +295,11 @@ int
 main(int argc, char *argv[])
 {
 	if (std::getenv("XDG_CACHE_HOME"))
-		opt_cache_dir = (std::string)std::getenv("XDG_CACHE_HOME") + "/cbase16";
+		opt_cache_dir /= std::getenv("XDG_CACHE_HOME");
 	else
-		opt_cache_dir = (std::string)std::getenv("HOME") + "/.cache/cbase16";
+		opt_cache_dir /= (std::filesystem::path)std::getenv("HOME") / ".cache";
+
+	opt_cache_dir /= "cbase16";
 
 	if (!std::filesystem::is_directory(opt_cache_dir))
 		std::filesystem::create_directory(opt_cache_dir);
@@ -334,8 +336,6 @@ main(int argc, char *argv[])
 			break;
 		case 'o':
 			opt_output = optarg;
-			if (opt_output[opt_output.length() - 1] == '/')
-				opt_output.pop_back();
 			break;
 		}
 	}
