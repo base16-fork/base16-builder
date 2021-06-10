@@ -15,14 +15,18 @@ Command:
 
 Options:
 
+- -c: set cache directory
 - -s: only build specified schemes
 - -t: only build specified templates
 - -o: set output directory
 
 ## File Structure
 
-After running `update`, the file structure for the directory under which the
-builder is ran will be structured as follows:
+the cache directory is set to `$XDG_CACHE_HOME` if the variable is not empty,
+else the cache directory is set to `$HOME/.cache`
+
+After running `update`, the file structure for the cache directory will be
+structured as follows:
 
 - `/sources.yaml` -- Holds a list of source repositories for schemes and templates
 - `/sources/schemes/list.yaml` -- Holds a list of scheme repositories

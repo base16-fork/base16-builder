@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -27,6 +28,7 @@ struct Scheme {
 std::vector<std::string> opt_schemes;
 std::vector<std::string> opt_templates;
 std::string opt_output = "output";
+std::string opt_cache_dir;
 
 int do_clone(const char *, const char *);
 void clone(std::string, std::string);
@@ -64,7 +66,8 @@ clone(std::string dir, std::string source)
 
 #pragma omp parallel for
 		for (int i = 0; i < token_key.size(); ++i)
-			do_clone((dir + token_key[i]).c_str(), token_value[i].c_str());
+			do_clone((opt_cache_dir + dir + token_key[i]).c_str(),
+			         token_value[i].c_str());
 	} else {
 		std::cerr << "error: cannot read " << source << std::endl;
 		exit(1);
@@ -74,7 +77,7 @@ clone(std::string dir, std::string source)
 void
 emit_source(void)
 {
-	std::ofstream file("sources.yaml");
+	std::ofstream file(opt_cache_dir + "/sources.yaml");
 
 	if (file.is_open()) {
 		YAML::Emitter source;
@@ -99,9 +102,9 @@ void
 update(void)
 {
 	emit_source();
-	clone("./sources/", "sources.yaml");
-	clone("./schemes/", "sources/schemes/list.yaml");
-	clone("./templates/", "sources/templates/list.yaml");
+	clone("/sources/", opt_cache_dir + "/sources.yaml");
+	clone("/schemes/", opt_cache_dir + "/sources/schemes/list.yaml");
+	clone("/templates/", opt_cache_dir + "/sources/templates/list.yaml");
 }
 
 std::vector<Template>
@@ -110,7 +113,7 @@ get_templates(void)
 	std::vector<Template> templates;
 
 	for (std::filesystem::directory_entry entry :
-	     std::filesystem::directory_iterator("templates")) {
+	     std::filesystem::directory_iterator(opt_cache_dir + "/templates")) {
 		std::string config_file = entry.path().string() + "/templates/config.yaml";
 		std::string template_file = entry.path().string() + "/templates/default.mustache";
 
@@ -145,7 +148,7 @@ get_schemes(void)
 	std::vector<Scheme> schemes;
 
 	for (std::filesystem::directory_entry dir :
-	     std::filesystem::directory_iterator("schemes")) {
+	     std::filesystem::directory_iterator(opt_cache_dir + "/schemes")) {
 		for (std::filesystem::directory_entry file :
 		     std::filesystem::directory_iterator(dir)) {
 			if (std::filesystem::is_regular_file(file) &&
@@ -291,47 +294,59 @@ build(void)
 int
 main(int argc, char *argv[])
 {
-	if (std::strcmp(argv[1], "update") == 0) {
-		update();
-	} else if (std::strcmp(argv[1], "build") == 0) {
-		int opt, index;
-		while ((opt = getopt(argc, argv, "s:t:o:")) != EOF) {
-			switch (opt) {
-			case 's':
-				index = optind - 1;
-				while (index < argc) {
-					char *next = strdup(argv[index]);
-					index++;
-					if (next[0] != '-')
-						opt_schemes.push_back(next);
-					else
-						break;
-				}
-				optind = index - 1;
-				break;
-			case 't':
-				index = optind - 1;
-				while (index < argc) {
-					char *next = strdup(argv[index]);
-					index++;
-					if (next[0] != '-')
-						opt_templates.push_back(next);
-					else
-						break;
-				}
-				optind = index - 1;
-				break;
-			case 'o':
-				opt_output = optarg;
-				if (opt_output[opt_output.length() - 1] == '/')
-					opt_output.pop_back();
-				break;
+	if (std::getenv("XDG_CACHE_HOME"))
+		opt_cache_dir = (std::string)std::getenv("XDG_CACHE_HOME") + "/cbase16";
+	else
+		opt_cache_dir = (std::string)std::getenv("HOME") + "/.cache/cbase16";
+
+	if (!std::filesystem::is_directory(opt_cache_dir))
+		std::filesystem::create_directory(opt_cache_dir);
+
+	int opt, index;
+	while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) {
+		switch (opt) {
+		case 'c':
+			opt_cache_dir = optarg;
+			break;
+		case 's':
+			index = optind - 1;
+			while (index < argc) {
+				char *next = strdup(argv[index]);
+				index++;
+				if (next[0] != '-')
+					opt_schemes.push_back(next);
+				else
+					break;
 			}
+			optind = index - 1;
+			break;
+		case 't':
+			index = optind - 1;
+			while (index < argc) {
+				char *next = strdup(argv[index]);
+				index++;
+				if (next[0] != '-')
+					opt_templates.push_back(next);
+				else
+					break;
+			}
+			optind = index - 1;
+			break;
+		case 'o':
+			opt_output = optarg;
+			if (opt_output[opt_output.length() - 1] == '/')
+				opt_output.pop_back();
+			break;
 		}
+	}
+
+	if (std::strcmp(argv[optind], "update") == 0) {
+		update();
+	} else if (std::strcmp(argv[optind], "build") == 0) {
 		build();
-	} else if (std::strcmp(argv[1], "version") == 0) {
+	} else if (std::strcmp(argv[optind], "version") == 0) {
 		std::cout << "cbase16-0.1.0" << std::endl;
-	} else if (std::strcmp(argv[1], "help") == 0) {
+	} else if (std::strcmp(argv[optind], "help") == 0) {
 		std::cout << "Usage: cbase16 [command] [options]" << std::endl << std::endl;
 		std::cout << "Command:" << std::endl;
 		std::cout << "    update  -- fetch all necessary sources for building" << std::endl;
@@ -339,6 +354,7 @@ main(int argc, char *argv[])
 		std::cout << "    version -- display version" << std::endl;
 		std::cout << "    help    -- display usage message" << std::endl << std::endl;
 		std::cout << "Options:" << std::endl;
+		std::cout << "    -c -- specify cache directory" << std::endl;
 		std::cout << "    -s -- only build specified schemes" << std::endl;
 		std::cout << "    -t -- only build specified templates" << std::endl;
 		std::cout << "    -o -- specify output directory" << std::endl;
