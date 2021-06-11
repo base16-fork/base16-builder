@@ -4,6 +4,7 @@
 _cbase16_build() {
 	local -a _build_options
 	_build_options=(
+		'-c:set cache directory'
 		'-s:only build specified schemes'
 		'-t:only build specified templates'
 		'-o:set output directory'
