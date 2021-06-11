@@ -286,11 +286,13 @@ build(void)
 			replace_all(t.data, "{{scheme-name}}", s.name);
 			replace_all(t.data, "{{scheme-author}}", s.name);
 
-			std::string output_dir = opt_output / t.name / t.output;
+			std::filesystem::path output_dir = opt_output / t.name / t.output;
 			std::filesystem::create_directories(output_dir);
-			std::ofstream output_file(output_dir + "/base16-" + s.slug + t.extension);
-			output_file << t.data << std::endl;
-			output_file.close();
+			std::ofstream output_file(output_dir / ("base16-" + s.slug + t.extension));
+			if (output_file.good()) {
+				output_file << t.data << std::endl;
+				output_file.close();
+			}
 		}
 	}
 }
