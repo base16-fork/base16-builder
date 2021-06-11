@@ -30,6 +30,7 @@ std::vector<std::string> opt_templates;
 std::filesystem::path opt_output = "output";
 std::filesystem::path opt_cache_dir;
 
+void die(int, std::string);
 void clone(std::string, std::string);
 void update(void);
 std::vector<Template> get_templates(void);
@@ -37,6 +38,13 @@ std::vector<Scheme> get_schemes(void);
 std::vector<int> hex_to_rgb(std::string);
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(void);
+
+void
+die(int e, std::string str)
+{
+	std::cout << str << std::endl;
+	exit(e);
+}
 
 void
 clone(std::string dir, std::string source)
@@ -60,8 +68,7 @@ clone(std::string dir, std::string source)
 			git_repository_free(repo);
 		}
 	} else {
-		std::cerr << "error: cannot read " << source << std::endl;
-		exit(1);
+		die(1, "error: cannot read " + source);
 	}
 }
 
@@ -84,10 +91,7 @@ update(void)
 		file << source.c_str();
 		file.close();
 	} else {
-		std::cerr
-			<< "error: fail to write source.yaml to cache directory: " << opt_cache_dir
-			<< std::endl;
-		exit(1);
+		die(1, "error: fail to write sources.yaml to " + opt_cache_dir.string());
 	}
 
 	git_libgit2_init();
@@ -336,28 +340,26 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (std::strcmp(argv[optind], "update") == 0) {
+	if (std::strcmp(argv[optind], "update") == 0)
 		update();
-	} else if (std::strcmp(argv[optind], "build") == 0) {
+	else if (std::strcmp(argv[optind], "build") == 0)
 		build();
-	} else if (std::strcmp(argv[optind], "version") == 0) {
-		std::cout << "cbase16-0.1.0" << std::endl;
-	} else if (std::strcmp(argv[optind], "help") == 0) {
-		std::cout << "Usage: cbase16 [command] [options]" << std::endl << std::endl;
-		std::cout << "Command:" << std::endl;
-		std::cout << "    update  -- fetch all necessary sources for building" << std::endl;
-		std::cout << "    build   -- generate colorscheme templates" << std::endl;
-		std::cout << "    version -- display version" << std::endl;
-		std::cout << "    help    -- display usage message" << std::endl << std::endl;
-		std::cout << "Options:" << std::endl;
-		std::cout << "    -c -- specify cache directory" << std::endl;
-		std::cout << "    -s -- only build specified schemes" << std::endl;
-		std::cout << "    -t -- only build specified templates" << std::endl;
-		std::cout << "    -o -- specify output directory" << std::endl;
-	} else {
-		std::cerr << "error: invalid command: " << argv[optind] << std::endl;
-		return 1;
-	}
+	else if (std::strcmp(argv[optind], "version") == 0)
+		die(0, "cbase16-0.2.0\n");
+	else if (std::strcmp(argv[optind], "help") == 0)
+		die(0, "usage: cbase16 [command] [options]\n"
+		       "command:\n"
+		       "   update  -- fetch all necessary sources for building\n"
+		       "   build   -- generate colorscheme templates\n"
+		       "   version -- display version\n"
+		       "   help    -- display usage message\n"
+		       "options:\n"
+		       "   -c -- specify cache directory\n"
+		       "   -s -- only build specified schemes\n"
+		       "   -t -- only build specified templates\n"
+		       "   -o -- specify output directory");
+	else
+		die(1, "error: invalid command: " + (std::string)argv[optind]);
 
 	return 0;
 }
