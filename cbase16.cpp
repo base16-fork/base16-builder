@@ -32,7 +32,6 @@ std::filesystem::path opt_cache_dir;
 
 int do_clone(const char *, const char *);
 void clone(std::string, std::string);
-void emit_source(void);
 void update(void);
 std::vector<Template> get_templates(void);
 std::vector<Scheme> get_schemes(void);
@@ -75,7 +74,7 @@ clone(std::string dir, std::string source)
 }
 
 void
-emit_source(void)
+update(void)
 {
 	std::ofstream file(opt_cache_dir / "sources.yaml");
 
@@ -98,12 +97,7 @@ emit_source(void)
 			<< std::endl;
 		exit(1);
 	}
-}
 
-void
-update(void)
-{
-	emit_source();
 	clone("sources", opt_cache_dir / "sources.yaml");
 	clone("schemes", opt_cache_dir / "sources" / "schemes" / "list.yaml");
 	clone("templates", opt_cache_dir / "sources" / "templates" / "list.yaml");
