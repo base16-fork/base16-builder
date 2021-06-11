@@ -157,8 +157,7 @@ get_schemes(void)
 	     std::filesystem::directory_iterator(opt_cache_dir / "schemes")) {
 		for (std::filesystem::directory_entry file :
 		     std::filesystem::directory_iterator(dir)) {
-			if (file.is_regular_file() &&
-			    file.path().extension() == ".yaml") {
+			if (file.is_regular_file() && file.path().extension() == ".yaml") {
 				YAML::Node node = YAML::LoadFile(file.path().string());
 
 				Scheme s;
