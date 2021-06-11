@@ -118,7 +118,7 @@ get_templates(void)
 		std::string template_file = entry.path() / "templates" / "default.mustache";
 
 		YAML::Node config = YAML::LoadFile(config_file);
-		std::ifstream templet(template_file);
+		std::ifstream templet(template_file, std::ios::binary | std::ios::ate);
 
 		Template t;
 		t.name = entry.path().stem().string();
@@ -132,11 +132,15 @@ get_templates(void)
 			t.output = node["output"].as<std::string>();
 		}
 
-		t.data = std::string(std::istreambuf_iterator<char>(templet),
-		                     std::istreambuf_iterator<char>());
+		if (templet.good()) {
+			templet.seekg(0, std::ios::end);
+			t.data.resize(templet.tellg());
+			templet.seekg(0, std::ios::beg);
+			templet.read(&t.data[0], t.data.size());
+			templet.close();
+		}
 
 		templates.push_back(t);
-		templet.close();
 	}
 
 	return templates;
