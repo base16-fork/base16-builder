@@ -363,7 +363,7 @@ main(int argc, char *argv[])
 		std::cout << "    -t -- only build specified templates" << std::endl;
 		std::cout << "    -o -- specify output directory" << std::endl;
 	} else {
-		std::cerr << "error: invalid command" << std::endl;
+		std::cerr << "error: invalid command: " << argv[optind] << std::endl;
 		return 1;
 	}
 
