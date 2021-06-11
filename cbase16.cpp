@@ -304,6 +304,8 @@ main(int argc, char *argv[])
 {
 	if (std::getenv("XDG_CACHE_HOME"))
 		opt_cache_dir /= std::getenv("XDG_CACHE_HOME");
+	else if (std::getenv("LOCALAPPDATA"))
+		opt_cache_dir /= std::getenv("LOCALAPPDATA");
 	else
 		opt_cache_dir /= (std::filesystem::path)std::getenv("HOME") / ".cache";
 
