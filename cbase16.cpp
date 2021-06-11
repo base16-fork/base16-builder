@@ -91,11 +91,13 @@ emit_source(void)
 		source << YAML::EndMap;
 
 		file << source.c_str();
+		file.close();
 	} else {
-		std::cerr << "error: fail to write source.yaml to current directory" << std::endl;
+		std::cerr
+			<< "error: fail to write source.yaml to cache directory: " << opt_cache_dir
+			<< std::endl;
 		exit(1);
 	}
-	file.close();
 }
 
 void
