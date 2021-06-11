@@ -30,7 +30,6 @@ std::vector<std::string> opt_templates;
 std::filesystem::path opt_output = "output";
 std::filesystem::path opt_cache_dir;
 
-int do_clone(const char *, const char *);
 void clone(std::string, std::string);
 void update(void);
 std::vector<Template> get_templates(void);
@@ -38,16 +37,6 @@ std::vector<Scheme> get_schemes(void);
 std::vector<int> hex_to_rgb(std::string);
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(void);
-
-int
-do_clone(const char *path, const char *url)
-{
-	git_libgit2_init();
-	git_repository *repo = NULL;
-	int ret = git_clone(&repo, url, path, NULL);
-	git_repository_free(repo);
-	return ret;
-}
 
 void
 clone(std::string dir, std::string source)
@@ -64,9 +53,12 @@ clone(std::string dir, std::string source)
 		}
 
 #pragma omp parallel for
-		for (int i = 0; i < token_key.size(); ++i)
-			do_clone((opt_cache_dir / dir / token_key[i]).c_str(),
-			         token_value[i].c_str());
+		for (int i = 0; i < token_key.size(); ++i) {
+			git_repository *repo = NULL;
+			git_clone(&repo, token_value[i].c_str(),
+			          (opt_cache_dir / dir / token_key[i]).c_str(), NULL);
+			git_repository_free(repo);
+		}
 	} else {
 		std::cerr << "error: cannot read " << source << std::endl;
 		exit(1);
@@ -98,6 +90,7 @@ update(void)
 		exit(1);
 	}
 
+	git_libgit2_init();
 	clone("sources", opt_cache_dir / "sources.yaml");
 	clone("schemes", opt_cache_dir / "sources" / "schemes" / "list.yaml");
 	clone("templates", opt_cache_dir / "sources" / "templates" / "list.yaml");
