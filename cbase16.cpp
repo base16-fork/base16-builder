@@ -48,8 +48,8 @@ clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const 
 		std::vector<std::string> token_value;
 
 		for (YAML::const_iterator it = file.begin(); it != file.end(); ++it) {
-			token_key.push_back(it->first.as<std::string>());
-			token_value.push_back(it->second.as<std::string>());
+			token_key.emplace_back(it->first.as<std::string>());
+			token_value.emplace_back(it->second.as<std::string>());
 		}
 
 #pragma omp parallel for default(none) shared(token_key, token_value, opt_cache_dir, dir)
@@ -135,7 +135,7 @@ get_templates(const std::filesystem::path &opt_cache_dir) -> std::vector<Templat
 			templet.close();
 		}
 
-		templates.push_back(t);
+		templates.emplace_back(t);
 	}
 
 	return templates;
@@ -174,7 +174,7 @@ get_schemes(const std::filesystem::path &opt_cache_dir) -> std::vector<Scheme>
 						s.colors.insert({ key, value });
 				}
 
-				schemes.push_back(s);
+				schemes.emplace_back(s);
 			}
 		}
 	}
@@ -343,7 +343,7 @@ main(int argc, char *argv[]) -> int
 				std::string next = args[index];
 				index++;
 				if (next[0] != '-')
-					opt_schemes.push_back(next);
+					opt_schemes.emplace_back(next);
 				else
 					break;
 			}
@@ -354,7 +354,7 @@ main(int argc, char *argv[]) -> int
 				std::string next = args[index];
 				index++;
 				if (next[0] != '-')
-					opt_templates.push_back(next);
+					opt_templates.emplace_back(next);
 				else
 					break;
 			}
