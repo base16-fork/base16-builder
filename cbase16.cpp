@@ -31,16 +31,16 @@ std::vector<std::string> opt_templates;
 std::filesystem::path opt_output = "output";
 std::filesystem::path opt_cache_dir;
 
-void clone(std::string, std::string);
-void update(void);
-std::vector<Template> get_templates(void);
-std::vector<Scheme> get_schemes(void);
-std::vector<int> hex_to_rgb(std::string);
+void clone(std::string &, std::string &);
+void update();
+auto get_templates() -> std::vector<Template>;
+auto get_schemes() -> std::vector<Scheme>;
+auto hex_to_rgb(std::string &) -> std::vector<int>;
 void replace_all(std::string &, const std::string &, const std::string &);
-void build(void);
+void build();
 
 void
-clone(std::string dir, std::string source)
+clone(const std::string &dir, const std::string &source)
 {
 	if (std::filesystem::is_regular_file(source)) {
 		YAML::Node file = YAML::LoadFile(source);
@@ -68,7 +68,7 @@ clone(std::string dir, std::string source)
 }
 
 void
-update(void)
+update()
 {
 	std::ofstream file(opt_cache_dir / "sources.yaml");
 
@@ -97,8 +97,8 @@ update(void)
 	git_libgit2_shutdown();
 }
 
-std::vector<Template>
-get_templates(void)
+auto
+get_templates() -> std::vector<Template>
 {
 	std::vector<Template> templates;
 
@@ -142,8 +142,8 @@ get_templates(void)
 	return templates;
 }
 
-std::vector<Scheme>
-get_schemes(void)
+auto
+get_schemes() -> std::vector<Scheme>
 {
 	std::vector<Scheme> schemes;
 
@@ -183,8 +183,8 @@ get_schemes(void)
 	return schemes;
 }
 
-std::vector<int>
-hex_to_rgb(std::string hex)
+auto
+hex_to_rgb(std::string &hex) -> std::vector<int>
 {
 	std::vector<int> rgb(3);
 	std::stringstream ss;
@@ -217,7 +217,7 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 }
 
 void
-build(void)
+build()
 {
 	std::vector<Scheme> schemes = get_schemes();
 	std::vector<Template> templates = get_templates();
@@ -301,8 +301,8 @@ build(void)
 	}
 }
 
-int
-main(int argc, char *argv[])
+auto
+main(int argc, char *argv[]) -> int
 {
 	if (std::getenv("XDG_CACHE_HOME") != nullptr)
 		opt_cache_dir /= std::getenv("XDG_CACHE_HOME");
