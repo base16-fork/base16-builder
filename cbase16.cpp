@@ -132,7 +132,7 @@ get_templates() -> std::vector<Template>
 			templet.seekg(0, std::ios::end);
 			t.data.resize(templet.tellg());
 			templet.seekg(0, std::ios::beg);
-			templet.read(&t.data[0], t.data.size());
+			templet.read(&t.data[0], (long)t.data.size());
 			templet.close();
 		}
 
