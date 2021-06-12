@@ -55,9 +55,9 @@ clone(const std::string &dir, const std::string &source)
 
 #pragma omp parallel for
 		for (int i = 0; i < token_key.size(); ++i) {
-			git_repository *repo = NULL;
+			git_repository *repo = nullptr;
 			git_clone(&repo, token_value[i].c_str(),
-			          (opt_cache_dir / dir / token_key[i]).c_str(), NULL);
+			          (opt_cache_dir / dir / token_key[i]).c_str(), nullptr);
 			git_repository_free(repo);
 		}
 
