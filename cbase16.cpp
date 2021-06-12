@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <span>
 #include <unistd.h>
 #include <vector>
 
@@ -303,9 +304,9 @@ build(void)
 int
 main(int argc, char *argv[])
 {
-	if (std::getenv("XDG_CACHE_HOME"))
+	if (std::getenv("XDG_CACHE_HOME") != nullptr)
 		opt_cache_dir /= std::getenv("XDG_CACHE_HOME");
-	else if (std::getenv("LOCALAPPDATA"))
+	else if (std::getenv("LOCALAPPDATA") != nullptr)
 		opt_cache_dir /= std::getenv("LOCALAPPDATA");
 	else
 		opt_cache_dir /= (std::filesystem::path)std::getenv("HOME") / ".cache";
@@ -314,6 +315,8 @@ main(int argc, char *argv[])
 
 	if (!std::filesystem::is_directory(opt_cache_dir))
 		std::filesystem::create_directory(opt_cache_dir);
+
+	std::span args(argv, size_t(argc));
 
 	int opt, index;
 	while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) {
@@ -324,29 +327,23 @@ main(int argc, char *argv[])
 		case 's':
 			index = optind - 1;
 			while (index < argc) {
-				char *next = strdup(argv[index]);
+				std::string next = args[index];
 				index++;
-				if (next[0] != '-') {
+				if (next[0] != '-')
 					opt_schemes.push_back(next);
-				} else {
-					free(next);
+				else
 					break;
-				}
-				free(next);
 			}
 			break;
 		case 't':
 			index = optind - 1;
 			while (index < argc) {
-				char *next = strdup(argv[index]);
+				std::string next = args[index];
 				index++;
-				if (next[0] != '-') {
+				if (next[0] != '-')
 					opt_templates.push_back(next);
-				} else {
-					free(next);
+				else
 					break;
-				}
-				free(next);
 			}
 			break;
 		case 'o':
@@ -355,18 +352,18 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (argv[optind] == NULL) {
+	if (args[optind] == nullptr) {
 		std::cout << "error: no command is detected" << std::endl;
 		return 1;
 	}
 
-	if (std::strcmp(argv[optind], "update") == 0) {
+	if (std::strcmp(args[optind], "update") == 0) {
 		update();
-	} else if (std::strcmp(argv[optind], "build") == 0) {
+	} else if (std::strcmp(args[optind], "build") == 0) {
 		build();
-	} else if (std::strcmp(argv[optind], "version") == 0) {
+	} else if (std::strcmp(args[optind], "version") == 0) {
 		std::cout << "cbase16-0.3.0" << std::endl;
-	} else if (std::strcmp(argv[optind], "help") == 0) {
+	} else if (std::strcmp(args[optind], "help") == 0) {
 		std::cout << "usage: cbase16 [command] [options]\n"
 			     "command:\n"
 			     "   update  -- fetch all necessary sources for building\n"
@@ -380,7 +377,7 @@ main(int argc, char *argv[])
 			     "   -o -- specify output directory"
 			  << std::endl;
 	} else {
-		std::cout << "error: invalid command: " << argv[optind] << std::endl;
+		std::cout << "error: invalid command: " << args[optind] << std::endl;
 		return 1;
 	}
 
