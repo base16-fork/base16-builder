@@ -101,6 +101,12 @@ get_templates(void)
 {
 	std::vector<Template> templates;
 
+	if (!std::filesystem::is_directory(opt_cache_dir / "templates")) {
+		std::cout << "warning: cache template directory is either empty or not found"
+			  << std::endl;
+		return templates;
+	}
+
 	for (std::filesystem::directory_entry entry :
 	     std::filesystem::directory_iterator(opt_cache_dir / "templates")) {
 		std::string config_file = entry.path() / "templates" / "config.yaml";
@@ -139,6 +145,12 @@ std::vector<Scheme>
 get_schemes(void)
 {
 	std::vector<Scheme> schemes;
+
+	if (!std::filesystem::is_directory(opt_cache_dir / "schemes")) {
+		std::cout << "warning: cache scheme directory is either empty or not found"
+			  << std::endl;
+		return schemes;
+	}
 
 	for (std::filesystem::directory_entry dir :
 	     std::filesystem::directory_iterator(opt_cache_dir / "schemes")) {
@@ -206,14 +218,17 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 void
 build(void)
 {
+	std::vector<Scheme> schemes = get_schemes();
+	std::vector<Template> templates = get_templates();
+
 #pragma omp parallel for
-	for (Scheme s : get_schemes()) {
+	for (Scheme s : schemes) {
 		if (!opt_schemes.empty() &&
 		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) == opt_schemes.end())
 			continue;
 
 #pragma omp parallel for
-		for (Template t : get_templates()) {
+		for (Template t : templates) {
 			if (!opt_templates.empty() &&
 			    std::find(opt_templates.begin(), opt_templates.end(), t.name) ==
 			            opt_templates.end())
