@@ -56,7 +56,7 @@ clone(const std::string &dir, const std::string &source)
 			token_value.push_back(it->second.as<std::string>());
 		}
 
-#pragma omp parallel for
+#pragma omp parallel for default(none) shared(token_key, token_value, opt_cache_dir, dir)
 		for (int i = 0; i < token_key.size(); ++i) {
 			git_repository *repo = nullptr;
 			git_clone(&repo, token_value[i].c_str(),
@@ -196,7 +196,7 @@ hex_to_rgb(const std::string &hex) -> std::vector<int>
 	if (hex.size() != HEX_MIN_LENGTH)
 		return rgb;
 
-#pragma omp parallel for
+#pragma omp parallel for default(none) shared(hex, str, ss, rgb)
 	for (int i = 0; i < 3; ++i) {
 		str = hex.substr(i * 2, 2);
 		ss << std::hex << str;
@@ -225,13 +225,14 @@ build()
 	std::vector<Scheme> schemes = get_schemes();
 	std::vector<Template> templates = get_templates();
 
-#pragma omp parallel for
+#pragma omp parallel for default(none) \
+	shared(opt_schemes, opt_templates, schemes, templates, opt_output)
 	for (const Scheme &s : schemes) {
 		if (!opt_schemes.empty() &&
 		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) == opt_schemes.end())
 			continue;
 
-#pragma omp parallel for
+#pragma omp parallel for default(none) shared(opt_templates, templates, s, opt_output)
 		for (Template t : templates) {
 			if (!opt_templates.empty() &&
 			    std::find(opt_templates.begin(), opt_templates.end(), t.name) ==
