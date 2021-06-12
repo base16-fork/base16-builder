@@ -26,6 +26,9 @@ struct Scheme {
 	std::map<std::string, std::string> colors;
 };
 
+constexpr int HEX_MIN_LENGTH = 6;
+constexpr int RGB_DEC = 255;
+
 std::vector<std::string> opt_schemes;
 std::vector<std::string> opt_templates;
 std::filesystem::path opt_output = "output";
@@ -190,7 +193,7 @@ hex_to_rgb(const std::string &hex) -> std::vector<int>
 	std::stringstream ss;
 	std::string str;
 
-	if (hex.size() != 6)
+	if (hex.size() != HEX_MIN_LENGTH)
 		return rgb;
 
 #pragma omp parallel for
@@ -247,7 +250,8 @@ build()
 
 				data[base + "-hex-r"] = hex[0];
 				data[base + "-rgb-r"] = std::to_string(rgb[0]);
-				data[base + "-dec-r"] = std::to_string((long double)rgb[0] / 255);
+				data[base + "-dec-r"] =
+					std::to_string((long double)rgb[0] / RGB_DEC);
 
 				replace_all(t.data, "{{" + base + "-hex-r" + "}}",
 				            data[base + "-hex-r"]);
@@ -258,7 +262,8 @@ build()
 
 				data[base + "-hex-g"] = hex[1];
 				data[base + "-rgb-g"] = std::to_string(rgb[1]);
-				data[base + "-dec-g"] = std::to_string((long double)rgb[1] / 255);
+				data[base + "-dec-g"] =
+					std::to_string((long double)rgb[1] / RGB_DEC);
 
 				replace_all(t.data, "{{" + base + "-hex-g" + "}}",
 				            data[base + "-hex-g"]);
@@ -269,7 +274,8 @@ build()
 
 				data[base + "-hex-b"] = hex[2];
 				data[base + "-rgb-b"] = std::to_string(rgb[2]);
-				data[base + "-dec-b"] = std::to_string((long double)rgb[2] / 255);
+				data[base + "-dec-b"] =
+					std::to_string((long double)rgb[2] / RGB_DEC);
 
 				replace_all(t.data, "{{" + base + "-hex-b" + "}}",
 				            data[base + "-hex-b"]);
@@ -318,7 +324,8 @@ main(int argc, char *argv[]) -> int
 
 	std::span args(argv, size_t(argc));
 
-	int opt = 0, index = 0;
+	int opt = 0;
+	int index = 0;
 	while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) {
 		switch (opt) {
 		case 'c':
