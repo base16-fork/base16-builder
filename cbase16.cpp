@@ -272,7 +272,7 @@ build(void)
 			}
 
 			replace_all(t.data, "{{scheme-name}}", s.name);
-			replace_all(t.data, "{{scheme-author}}", s.name);
+			replace_all(t.data, "{{scheme-author}}", s.author);
 
 			std::filesystem::path output_dir = opt_output / t.name / t.output;
 			std::filesystem::create_directories(output_dir);
