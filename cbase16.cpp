@@ -29,21 +29,17 @@ struct Scheme {
 constexpr int HEX_MIN_LENGTH = 6;
 constexpr int RGB_DEC = 255;
 
-std::vector<std::string> opt_schemes;
-std::vector<std::string> opt_templates;
-std::filesystem::path opt_output = "output";
-std::filesystem::path opt_cache_dir;
-
-void clone(std::string &, std::string &);
-void update();
-auto get_templates() -> std::vector<Template>;
-auto get_schemes() -> std::vector<Scheme>;
+void clone(const std::filesystem::path &, std::string &, std::string &);
+void update(const std::filesystem::path &);
+auto get_templates(const std::filesystem::path &) -> std::vector<Template>;
+auto get_schemes(const std::filesystem::path &) -> std::vector<Scheme>;
 auto hex_to_rgb(const std::string &) -> std::vector<int>;
 void replace_all(std::string &, const std::string &, const std::string &);
-void build();
+void build(const std::filesystem::path &, std::vector<std::string>, std::vector<std::string>,
+           const std::filesystem::path &);
 
 void
-clone(const std::string &dir, const std::string &source)
+clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const std::string &source)
 {
 	if (std::filesystem::is_regular_file(source)) {
 		YAML::Node file = YAML::LoadFile(source);
@@ -71,7 +67,7 @@ clone(const std::string &dir, const std::string &source)
 }
 
 void
-update()
+update(const std::filesystem::path &opt_cache_dir)
 {
 	std::ofstream file(opt_cache_dir / "sources.yaml");
 
@@ -94,14 +90,14 @@ update()
 	}
 
 	git_libgit2_init();
-	clone("sources", opt_cache_dir / "sources.yaml");
-	clone("schemes", opt_cache_dir / "sources" / "schemes" / "list.yaml");
-	clone("templates", opt_cache_dir / "sources" / "templates" / "list.yaml");
+	clone(opt_cache_dir, "sources", opt_cache_dir / "sources.yaml");
+	clone(opt_cache_dir, "schemes", opt_cache_dir / "sources" / "schemes" / "list.yaml");
+	clone(opt_cache_dir, "templates", opt_cache_dir / "sources" / "templates" / "list.yaml");
 	git_libgit2_shutdown();
 }
 
 auto
-get_templates() -> std::vector<Template>
+get_templates(const std::filesystem::path &opt_cache_dir) -> std::vector<Template>
 {
 	std::vector<Template> templates;
 
@@ -146,7 +142,7 @@ get_templates() -> std::vector<Template>
 }
 
 auto
-get_schemes() -> std::vector<Scheme>
+get_schemes(const std::filesystem::path &opt_cache_dir) -> std::vector<Scheme>
 {
 	std::vector<Scheme> schemes;
 
@@ -220,10 +216,11 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 }
 
 void
-build()
+build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_schemes,
+      std::vector<std::string> opt_templates, const std::filesystem::path &opt_output)
 {
-	std::vector<Scheme> schemes = get_schemes();
-	std::vector<Template> templates = get_templates();
+	std::vector<Scheme> schemes = get_schemes(opt_cache_dir);
+	std::vector<Template> templates = get_templates(opt_cache_dir);
 
 #pragma omp parallel for default(none) \
 	shared(opt_schemes, opt_templates, schemes, templates, opt_output)
@@ -311,6 +308,9 @@ build()
 auto
 main(int argc, char *argv[]) -> int
 {
+	std::filesystem::path opt_cache_dir;
+	std::filesystem::path opt_output = "output";
+
 	if (std::getenv("XDG_CACHE_HOME") != nullptr)
 		opt_cache_dir /= std::getenv("XDG_CACHE_HOME");
 	else if (std::getenv("LOCALAPPDATA") != nullptr)
@@ -324,6 +324,9 @@ main(int argc, char *argv[]) -> int
 		std::filesystem::create_directory(opt_cache_dir);
 
 	std::span args(argv, size_t(argc));
+
+	std::vector<std::string> opt_schemes;
+	std::vector<std::string> opt_templates;
 
 	int opt = 0;
 	int index = 0;
@@ -366,9 +369,9 @@ main(int argc, char *argv[]) -> int
 	}
 
 	if (std::strcmp(args[optind], "update") == 0) {
-		update();
+		update(opt_cache_dir);
 	} else if (std::strcmp(args[optind], "build") == 0) {
-		build();
+		build(opt_cache_dir, opt_schemes, opt_templates, opt_output);
 	} else if (std::strcmp(args[optind], "version") == 0) {
 		std::cout << "cbase16-0.3.0" << std::endl;
 	} else if (std::strcmp(args[optind], "help") == 0) {
