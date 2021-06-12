@@ -35,7 +35,7 @@ void clone(std::string &, std::string &);
 void update();
 auto get_templates() -> std::vector<Template>;
 auto get_schemes() -> std::vector<Scheme>;
-auto hex_to_rgb(std::string &) -> std::vector<int>;
+auto hex_to_rgb(const std::string &) -> std::vector<int>;
 void replace_all(std::string &, const std::string &, const std::string &);
 void build();
 
@@ -108,7 +108,7 @@ get_templates() -> std::vector<Template>
 		return templates;
 	}
 
-	for (std::filesystem::directory_entry entry :
+	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(opt_cache_dir / "templates")) {
 		std::string config_file = entry.path() / "templates" / "config.yaml";
 		std::string template_file = entry.path() / "templates" / "default.mustache";
@@ -153,9 +153,9 @@ get_schemes() -> std::vector<Scheme>
 		return schemes;
 	}
 
-	for (std::filesystem::directory_entry dir :
+	for (const std::filesystem::directory_entry &dir :
 	     std::filesystem::directory_iterator(opt_cache_dir / "schemes")) {
-		for (std::filesystem::directory_entry file :
+		for (const std::filesystem::directory_entry &file :
 		     std::filesystem::directory_iterator(dir)) {
 			if (file.is_regular_file() && file.path().extension() == ".yaml") {
 				YAML::Node node = YAML::LoadFile(file.path().string());
@@ -164,8 +164,8 @@ get_schemes() -> std::vector<Scheme>
 				s.slug = file.path().stem().string();
 				for (YAML::const_iterator it = node.begin(); it != node.end();
 				     ++it) {
-					std::string key = it->first.as<std::string>();
-					std::string value = it->second.as<std::string>();
+					auto key = it->first.as<std::string>();
+					auto value = it->second.as<std::string>();
 
 					if (key.compare("scheme") == 0)
 						s.name = value;
@@ -184,7 +184,7 @@ get_schemes() -> std::vector<Scheme>
 }
 
 auto
-hex_to_rgb(std::string &hex) -> std::vector<int>
+hex_to_rgb(const std::string &hex) -> std::vector<int>
 {
 	std::vector<int> rgb(3);
 	std::stringstream ss;
@@ -223,7 +223,7 @@ build()
 	std::vector<Template> templates = get_templates();
 
 #pragma omp parallel for
-	for (Scheme s : schemes) {
+	for (const Scheme &s : schemes) {
 		if (!opt_schemes.empty() &&
 		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) == opt_schemes.end())
 			continue;
