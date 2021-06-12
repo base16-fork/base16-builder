@@ -166,9 +166,9 @@ get_schemes(const std::filesystem::path &opt_cache_dir) -> std::vector<Scheme>
 					auto key = it->first.as<std::string>();
 					auto value = it->second.as<std::string>();
 
-					if (key.compare("scheme") == 0)
+					if (key == "scheme")
 						s.name = value;
-					else if (key.compare("author") == 0)
+					else if (key == "author")
 						s.author = value;
 					else
 						s.colors.insert({ key, value });
@@ -241,7 +241,7 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 			data["scheme-slug"] = s.slug;
 			data["scheme-name"] = s.name;
 			data["scheme-author"] = s.author;
-			for (auto &[base, color] : s.colors) {
+			for (const auto &[base, color] : s.colors) {
 				std::vector<std::string> hex = { color.substr(0, 2),
 					                         color.substr(2, 2),
 					                         color.substr(4, 2) };
