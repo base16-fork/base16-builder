@@ -318,7 +318,7 @@ main(int argc, char *argv[]) -> int
 
 	std::span args(argv, size_t(argc));
 
-	int opt, index;
+	int opt = 0, index = 0;
 	while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) {
 		switch (opt) {
 		case 'c':
