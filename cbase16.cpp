@@ -93,6 +93,7 @@ update(void)
 	clone("sources", opt_cache_dir / "sources.yaml");
 	clone("schemes", opt_cache_dir / "sources" / "schemes" / "list.yaml");
 	clone("templates", opt_cache_dir / "sources" / "templates" / "list.yaml");
+	git_libgit2_shutdown();
 }
 
 std::vector<Template>
