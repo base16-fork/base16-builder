@@ -66,7 +66,7 @@ clone(const std::string &dir, const std::string &source)
 
 	} else {
 		std::cout << "error: cannot read " + source << std::endl;
-		exit(1);
+		_exit(1);
 	}
 }
 
@@ -90,7 +90,7 @@ update()
 		file.close();
 	} else {
 		std::cout << "error: fail to write sources.yaml to " << opt_cache_dir << std::endl;
-		exit(1);
+		_exit(1);
 	}
 
 	git_libgit2_init();
