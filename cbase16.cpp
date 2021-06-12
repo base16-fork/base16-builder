@@ -375,7 +375,7 @@ main(int argc, char *argv[]) -> int
 	} else if (std::strcmp(args[optind], "build") == 0) {
 		build(opt_cache_dir, opt_schemes, opt_templates, opt_output);
 	} else if (std::strcmp(args[optind], "version") == 0) {
-		std::cout << "cbase16-0.3.0" << std::endl;
+		std::cout << "cbase16-0.4.0" << std::endl;
 	} else if (std::strcmp(args[optind], "help") == 0) {
 		std::cout << "usage: cbase16 [command] [options]\n"
 			     "command:\n"
