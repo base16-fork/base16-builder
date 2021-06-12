@@ -1,5 +1,14 @@
 #compdef cbase16
 
+(( $+function[_cbase16_update] )) ||
+_cbase16_update() {
+	local -a _build_options
+	_build_options=(
+		'-c:set cache directory'
+	)
+	_describe "option" _update_options
+}
+
 (( $+function[_cbase16_build] )) ||
 _cbase16_build() {
 	local -a _build_options
