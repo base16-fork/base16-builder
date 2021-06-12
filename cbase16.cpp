@@ -208,6 +208,7 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 {
 	if (from.empty())
 		return;
+
 	size_t start_pos = 0;
 	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
 		str.replace(start_pos, from.length(), to);
@@ -308,6 +309,14 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 auto
 main(int argc, char *argv[]) -> int
 {
+	int opt = 0;
+	int index = 0;
+
+	std::span args(argv, size_t(argc));
+
+	std::vector<std::string> opt_schemes;
+	std::vector<std::string> opt_templates;
+
 	std::filesystem::path opt_cache_dir;
 	std::filesystem::path opt_output = "output";
 
@@ -323,13 +332,6 @@ main(int argc, char *argv[]) -> int
 	if (!std::filesystem::is_directory(opt_cache_dir))
 		std::filesystem::create_directory(opt_cache_dir);
 
-	std::span args(argv, size_t(argc));
-
-	std::vector<std::string> opt_schemes;
-	std::vector<std::string> opt_templates;
-
-	int opt = 0;
-	int index = 0;
 	while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 		switch (opt) {
 		case 'c':
