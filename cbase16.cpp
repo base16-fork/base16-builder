@@ -341,7 +341,7 @@ main(int argc, char *argv[])
 	}
 
 	if (argv[optind] == NULL) {
-		std::cout << "error: argument is null" << std::endl;
+		std::cout << "error: no command is detected" << std::endl;
 		return 1;
 	}
 
