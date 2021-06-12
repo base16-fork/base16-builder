@@ -311,12 +311,12 @@ main(int argc, char *argv[]) -> int
 	std::filesystem::path opt_cache_dir;
 	std::filesystem::path opt_output = "output";
 
-	if (std::getenv("XDG_CACHE_HOME") != nullptr)
-		opt_cache_dir /= std::getenv("XDG_CACHE_HOME");
-	else if (std::getenv("LOCALAPPDATA") != nullptr)
-		opt_cache_dir /= std::getenv("LOCALAPPDATA");
+	if (std::getenv("XDG_CACHE_HOME") != nullptr) // NOLINT (concurrency-mt-unsafe)
+		opt_cache_dir /= std::getenv("XDG_CACHE_HOME"); // NOLINT (concurrency-mt-unsafe)
+	else if (std::getenv("LOCALAPPDATA") != nullptr) // NOLINT (concurrency-mt-unsafe)
+		opt_cache_dir /= std::getenv("LOCALAPPDATA"); // NOLINT (concurrency-mt-unsafe)
 	else
-		opt_cache_dir /= (std::filesystem::path)std::getenv("HOME") / ".cache";
+		opt_cache_dir /= (std::filesystem::path)std::getenv("HOME") / ".cache"; // NOLINT (concurrency-mt-unsafe)
 
 	opt_cache_dir /= "cbase16";
 
@@ -330,7 +330,7 @@ main(int argc, char *argv[]) -> int
 
 	int opt = 0;
 	int index = 0;
-	while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) {
+	while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 		switch (opt) {
 		case 'c':
 			opt_cache_dir = optarg;
