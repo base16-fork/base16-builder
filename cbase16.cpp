@@ -278,7 +278,7 @@ build(void)
 			std::filesystem::create_directories(output_dir);
 			std::ofstream output_file(output_dir / ("base16-" + s.slug + t.extension));
 			if (output_file.good()) {
-				output_file << t.data << std::endl;
+				output_file << t.data;
 				output_file.close();
 			}
 		}
