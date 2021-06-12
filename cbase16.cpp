@@ -67,6 +67,7 @@ clone(std::string dir, std::string source)
 			          (opt_cache_dir / dir / token_key[i]).c_str(), NULL);
 			git_repository_free(repo);
 		}
+
 	} else {
 		die(1, "error: cannot read " + source);
 	}
@@ -315,24 +316,28 @@ main(int argc, char *argv[])
 			while (index < argc) {
 				char *next = strdup(argv[index]);
 				index++;
-				if (next[0] != '-')
+				if (next[0] != '-') {
 					opt_schemes.push_back(next);
-				else
+				} else {
+					free(next);
 					break;
+				}
+				free(next);
 			}
-			optind = index - 1;
 			break;
 		case 't':
 			index = optind - 1;
 			while (index < argc) {
 				char *next = strdup(argv[index]);
 				index++;
-				if (next[0] != '-')
+				if (next[0] != '-') {
 					opt_templates.push_back(next);
-				else
+				} else {
+					free(next);
 					break;
+				}
+				free(next);
 			}
-			optind = index - 1;
 			break;
 		case 'o':
 			opt_output = optarg;
