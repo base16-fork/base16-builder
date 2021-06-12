@@ -1,0 +1,268 @@
+---
+Checks: >
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  openmp-*,
+  performance-*,
+  portability-*,
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: false
+FormatStyle:     file
+CheckOptions:
+  - key:             cert-msc32-c.DisallowedSeedTypes
+    value:           'time_t,std::time_t'
+  - key:             modernize-replace-auto-ptr.IncludeStyle
+    value:           llvm
+  - key:             cppcoreguidelines-no-malloc.Reallocations
+    value:           '::realloc'
+  - key:             cppcoreguidelines-owning-memory.LegacyResourceConsumers
+    value:           '::free;::realloc;::freopen;::fclose'
+  - key:             modernize-use-auto.MinTypeNameLength
+    value:           '5'
+  - key:             performance-move-const-arg.CheckTriviallyCopyableMove
+    value:           'true'
+  - key:             cert-dcl16-c.NewSuffixes
+    value:           'L;LL;LU;LLU'
+  - key:             cert-err61-cpp.MaxSize
+    value:           '-1'
+  - key:             cert-dcl51-cpp.AggressiveDependentMemberLookup
+    value:           'false'
+  - key:             cppcoreguidelines-macro-usage.CheckCapsOnly
+    value:           'false'
+  - key:             modernize-use-default-member-init.UseAssignment
+    value:           'false'
+  - key:             cert-dcl37-c.AllowedIdentifiers
+    value:           ''
+  - key:             modernize-use-override.AllowOverrideAndFinal
+    value:           'false'
+  - key:             openmp-exception-escape.IgnoredExceptions
+    value:           ''
+  - key:             modernize-pass-by-value.ValuesOnly
+    value:           'false'
+  - key:             modernize-loop-convert.IncludeStyle
+    value:           llvm
+  - key:             cert-str34-c.DiagnoseSignedUnsignedCharComparisons
+    value:           'false'
+  - key:             cppcoreguidelines-explicit-virtual-functions.AllowOverrideAndFinal
+    value:           'false'
+  - key:             cert-err61-cpp.WarnOnLargeObjects
+    value:           'false'
+  - key:             cert-err09-cpp.WarnOnLargeObjects
+    value:           'false'
+  - key:             modernize-use-emplace.TupleTypes
+    value:           '::std::pair;::std::tuple'
+  - key:             modernize-use-emplace.TupleMakeFunctions
+    value:           '::std::make_pair;::std::make_tuple'
+  - key:             cppcoreguidelines-owning-memory.LegacyResourceProducers
+    value:           '::malloc;::aligned_alloc;::realloc;::calloc;::fopen;::freopen;::tmpfile'
+  - key:             cppcoreguidelines-narrowing-conversions.WarnOnFloatingPointNarrowingConversion
+    value:           'true'
+  - key:             cppcoreguidelines-init-variables.IncludeStyle
+    value:           llvm
+  - key:             modernize-use-nodiscard.ReplacementString
+    value:           '[[nodiscard]]'
+  - key:             modernize-loop-convert.MakeReverseRangeHeader
+    value:           ''
+  - key:             modernize-replace-random-shuffle.IncludeStyle
+    value:           llvm
+  - key:             modernize-use-bool-literals.IgnoreMacros
+    value:           'true'
+  - key:             google-readability-namespace-comments.ShortNamespaceLines
+    value:           '10'
+  - key:             modernize-avoid-bind.PermissiveParameterList
+    value:           'false'
+  - key:             modernize-use-override.FinalSpelling
+    value:           final
+  - key:             cert-err09-cpp.MaxSize
+    value:           '-1'
+  - key:             performance-move-constructor-init.IncludeStyle
+    value:           llvm
+  - key:             modernize-loop-convert.UseCxx20ReverseRanges
+    value:           'true'
+  - key:             modernize-use-noexcept.ReplacementString
+    value:           ''
+  - key:             modernize-use-using.IgnoreMacros
+    value:           'true'
+  - key:             cert-oop57-cpp.MemSetNames
+    value:           ''
+  - key:             performance-type-promotion-in-math-fn.IncludeStyle
+    value:           llvm
+  - key:             cppcoreguidelines-explicit-virtual-functions.FinalSpelling
+    value:           final
+  - key:             modernize-loop-convert.NamingStyle
+    value:           CamelCase
+  - key:             cppcoreguidelines-pro-type-member-init.UseAssignment
+    value:           'false'
+  - key:             modernize-loop-convert.MakeReverseRangeFunction
+    value:           ''
+  - key:             performance-no-automatic-move.AllowedTypes
+    value:           ''
+  - key:             performance-for-range-copy.WarnOnAllAutoCopies
+    value:           'false'
+  - key:             modernize-pass-by-value.IncludeStyle
+    value:           llvm
+  - key:             cppcoreguidelines-explicit-virtual-functions.OverrideSpelling
+    value:           override
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL'
+  - key:             modernize-make-shared.IgnoreMacros
+    value:           'true'
+  - key:             cert-dcl59-cpp.HeaderFileExtensions
+    value:           ';h;hh;hpp;hxx'
+  - key:             performance-unnecessary-copy-initialization.AllowedTypes
+    value:           ''
+  - key:             cppcoreguidelines-macro-usage.AllowedRegexp
+    value:           '^DEBUG_*'
+  - key:             modernize-use-transparent-functors.SafeMode
+    value:           'false'
+  - key:             cppcoreguidelines-narrowing-conversions.PedanticMode
+    value:           'false'
+  - key:             modernize-make-shared.IgnoreDefaultInitialization
+    value:           'true'
+  - key:             modernize-make-shared.IncludeStyle
+    value:           llvm
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoreAllFloatingPointValues
+    value:           'false'
+  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value:           'false'
+  - key:             cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
+    value:           'false'
+  - key:             cert-err09-cpp.CheckThrowTemporaries
+    value:           'true'
+  - key:             cert-dcl51-cpp.Invert
+    value:           'false'
+  - key:             performance-inefficient-vector-operation.EnableProto
+    value:           'false'
+  - key:             modernize-loop-convert.MaxCopySize
+    value:           '16'
+  - key:             modernize-make-shared.MakeSmartPtrFunction
+    value:           'std::make_shared'
+  - key:             portability-simd-intrinsics.Suggest
+    value:           'false'
+  - key:             cppcoreguidelines-pro-bounds-constant-array-index.GslHeader
+    value:           ''
+  - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
+    value:           'true'
+  - key:             modernize-make-unique.IgnoreMacros
+    value:           'true'
+  - key:             performance-for-range-copy.AllowedTypes
+    value:           ''
+  - key:             modernize-make-shared.MakeSmartPtrFunctionHeader
+    value:           '<memory>'
+  - key:             modernize-use-override.IgnoreDestructors
+    value:           'false'
+  - key:             modernize-make-unique.IgnoreDefaultInitialization
+    value:           'true'
+  - key:             modernize-use-emplace.ContainersWithPushBack
+    value:           '::std::vector;::std::list;::std::deque'
+  - key:             modernize-make-unique.IncludeStyle
+    value:           llvm
+  - key:             modernize-use-override.OverrideSpelling
+    value:           override
+  - key:             performance-inefficient-string-concatenation.StrictMode
+    value:           'false'
+  - key:             concurrency-mt-unsafe.FunctionSet
+    value:           any
+  - key:             google-readability-braces-around-statements.ShortStatementLines
+    value:           '0'
+  - key:             modernize-make-unique.MakeSmartPtrFunction
+    value:           'std::make_unique'
+  - key:             cppcoreguidelines-pro-type-member-init.IgnoreArrays
+    value:           'false'
+  - key:             portability-restrict-system-includes.Includes
+    value:           '*'
+  - key:             cert-dcl51-cpp.AllowedIdentifiers
+    value:           ''
+  - key:             modernize-use-emplace.IgnoreImplicitConstructors
+    value:           'false'
+  - key:             cert-oop57-cpp.MemCpyNames
+    value:           ''
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoredFloatingPointValues
+    value:           '1.0;100.0;'
+  - key:             modernize-make-unique.MakeSmartPtrFunctionHeader
+    value:           '<memory>'
+  - key:             cppcoreguidelines-macro-usage.IgnoreCommandLineMacros
+    value:           'true'
+  - key:             modernize-use-equals-delete.IgnoreMacros
+    value:           'true'
+  - key:             cppcoreguidelines-pro-bounds-constant-array-index.IncludeStyle
+    value:           llvm
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoredIntegerValues
+    value:           '1;2;3;4;'
+  - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnorePublicMemberVariables
+    value:           'false'
+  - key:             modernize-loop-convert.MinConfidence
+    value:           reasonable
+  - key:             performance-unnecessary-value-param.AllowedTypes
+    value:           ''
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues
+    value:           'false'
+  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
+    value:           'false'
+  - key:             cert-oop57-cpp.MemCmpNames
+    value:           ''
+  - key:             google-readability-namespace-comments.SpacesBeforeComments
+    value:           '2'
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoreBitFieldsWidths
+    value:           'true'
+  - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value:           'true'
+  - key:             cppcoreguidelines-no-malloc.Allocations
+    value:           '::malloc;::calloc'
+  - key:             modernize-use-noexcept.UseNoexceptFalse
+    value:           'true'
+  - key:             performance-faster-string-find.StringLikeClasses
+    value:           '::std::basic_string;::std::basic_string_view'
+  - key:             cert-err61-cpp.CheckThrowTemporaries
+    value:           'true'
+  - key:             modernize-use-default-member-init.IgnoreMacros
+    value:           'true'
+  - key:             llvm-qualified-auto.AddConstToQualified
+    value:           '0'
+  - key:             cppcoreguidelines-init-variables.MathHeader
+    value:           '<math.h>'
+  - key:             cert-str34-c.CharTypdefsToIgnore
+    value:           ''
+  - key:             google-readability-function-size.StatementThreshold
+    value:           '800'
+  - key:             llvm-else-after-return.WarnOnConditionVariables
+    value:           '0'
+  - key:             cert-msc51-cpp.DisallowedSeedTypes
+    value:           'time_t,std::time_t'
+  - key:             modernize-raw-string-literal.DelimiterStem
+    value:           lit
+  - key:             modernize-use-equals-default.IgnoreMacros
+    value:           'true'
+  - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value:           'false'
+  - key:             cert-dcl37-c.Invert
+    value:           'false'
+  - key:             cert-dcl37-c.AggressiveDependentMemberLookup
+    value:           'false'
+  - key:             modernize-raw-string-literal.ReplaceShorterLiterals
+    value:           'false'
+  - key:             modernize-use-emplace.SmartPointers
+    value:           '::std::shared_ptr;::std::unique_ptr;::std::auto_ptr;::std::weak_ptr'
+  - key:             cppcoreguidelines-no-malloc.Deallocations
+    value:           '::free'
+  - key:             modernize-use-auto.RemoveStars
+    value:           'false'
+  - key:             performance-inefficient-vector-operation.VectorLikeClasses
+    value:           '::std::vector'
+  - key:             portability-simd-intrinsics.Std
+    value:           ''
+  - key:             performance-unnecessary-value-param.IncludeStyle
+    value:           llvm
+  - key:             modernize-replace-disallow-copy-and-assign-macro.MacroName
+    value:           DISALLOW_COPY_AND_ASSIGN
+  - key:             cert-dcl16-c.IgnoreMacros
+    value:           'true'
+  - key:             llvm-else-after-return.WarnOnUnfixable
+    value:           '0'
+  - key:             cert-oop11-cpp.IncludeStyle
+    value:           llvm
+...
