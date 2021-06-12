@@ -340,6 +340,9 @@ main(int argc, char *argv[])
 		}
 	}
 
+	if (argv[optind] == NULL)
+		die(1, "error: argument is null");
+
 	if (std::strcmp(argv[optind], "update") == 0)
 		update();
 	else if (std::strcmp(argv[optind], "build") == 0)
