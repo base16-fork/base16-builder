@@ -71,7 +71,7 @@ update(void)
 {
 	std::ofstream file(opt_cache_dir / "sources.yaml");
 
-	if (file.is_open()) {
+	if (file.good()) {
 		YAML::Emitter source;
 		source << YAML::BeginMap;
 		source << YAML::Key << "schemes";
