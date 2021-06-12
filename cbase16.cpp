@@ -350,7 +350,7 @@ main(int argc, char *argv[])
 	} else if (std::strcmp(argv[optind], "build") == 0) {
 		build();
 	} else if (std::strcmp(argv[optind], "version") == 0) {
-		std::cout << "cbase16-0.2.0" << std::endl;
+		std::cout << "cbase16-0.3.0" << std::endl;
 	} else if (std::strcmp(argv[optind], "help") == 0) {
 		std::cout << "usage: cbase16 [command] [options]\n"
 			     "command:\n"
