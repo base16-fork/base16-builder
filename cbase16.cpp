@@ -360,7 +360,8 @@ list_templates(const std::filesystem::path &opt_cache_dir)
 		if (row != 0)
 			std::cout << std::endl;
 		for (int column = 0; column < num_of_column; ++column) {
-			std::cout << std::left << std::setw(padding) << templates[index].name << std::setw(padding);
+			std::cout << std::left << std::setw(padding) << templates[index].name
+				  << std::setw(padding);
 			index += 1;
 		}
 	}
@@ -368,7 +369,8 @@ list_templates(const std::filesystem::path &opt_cache_dir)
 	std::cout << std::endl;
 
 	for (int column = 0; column <= remainder; ++column) {
-		std::cout << std::left << std::setw(padding) << templates[index].name << std::setw(padding);
+		std::cout << std::left << std::setw(padding) << templates[index].name
+			  << std::setw(padding);
 		index += 1;
 	}
 
@@ -399,7 +401,8 @@ list_schemes(const std::filesystem::path &opt_cache_dir)
 		if (row != 0)
 			std::cout << std::endl;
 		for (int column = 0; column < num_of_column; ++column) {
-			std::cout << std::left << std::setw(padding) << schemes[index].slug << std::setw(padding);
+			std::cout << std::left << std::setw(padding) << schemes[index].slug
+				  << std::setw(padding);
 			index += 1;
 		}
 	}
@@ -407,7 +410,8 @@ list_schemes(const std::filesystem::path &opt_cache_dir)
 	std::cout << std::endl;
 
 	for (int column = 0; column <= remainder; ++column) {
-		std::cout << std::left << std::setw(padding) << schemes[index].slug << std::setw(padding);
+		std::cout << std::left << std::setw(padding) << schemes[index].slug
+			  << std::setw(padding);
 		index += 1;
 	}
 
@@ -415,7 +419,8 @@ list_schemes(const std::filesystem::path &opt_cache_dir)
 }
 
 void
-list(const std::filesystem::path &opt_cache_dir, const bool &opt_show_scheme, const bool &opt_show_template)
+list(const std::filesystem::path &opt_cache_dir, const bool &opt_show_scheme,
+     const bool &opt_show_template)
 {
 	if (opt_show_scheme) {
 		std::cout << "--- scheme ---" << std::endl;
