@@ -414,6 +414,20 @@ list_schemes(const std::filesystem::path &opt_cache_dir)
 	std::cout << std::endl;
 }
 
+void
+list(const std::filesystem::path &opt_cache_dir, const bool &opt_show_scheme, const bool &opt_show_template)
+{
+	if (opt_show_scheme) {
+		std::cout << "--- scheme ---" << std::endl;
+		list_schemes(opt_cache_dir);
+	}
+
+	if (opt_show_template) {
+		std::cout << "--- template ---" << std::endl;
+		list_templates(opt_cache_dir);
+	}
+}
+
 auto
 main(int argc, char *argv[]) -> int
 {
@@ -428,6 +442,9 @@ main(int argc, char *argv[]) -> int
 	std::filesystem::path opt_cache_dir;
 	std::filesystem::path opt_output = "output";
 
+	bool opt_show_scheme = true;
+	bool opt_show_template = true;
+
 	if (std::getenv("XDG_CACHE_HOME") != nullptr) // NOLINT (concurrency-mt-unsafe)
 		opt_cache_dir /= std::getenv("XDG_CACHE_HOME"); // NOLINT (concurrency-mt-unsafe)
 	else if (std::getenv("LOCALAPPDATA") != nullptr) // NOLINT (concurrency-mt-unsafe)
@@ -440,12 +457,13 @@ main(int argc, char *argv[]) -> int
 	if (!std::filesystem::is_directory(opt_cache_dir))
 		std::filesystem::create_directory(opt_cache_dir);
 
-	while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+	while ((opt = getopt(argc, argv, "c:s::t::o:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 		switch (opt) {
 		case 'c':
 			opt_cache_dir = optarg;
 			break;
 		case 's':
+			opt_show_template = false;
 			index = optind - 1;
 			while (index < argc) {
 				std::string next = args[index];
@@ -457,6 +475,7 @@ main(int argc, char *argv[]) -> int
 			}
 			break;
 		case 't':
+			opt_show_scheme = false;
 			index = optind - 1;
 			while (index < argc) {
 				std::string next = args[index];
@@ -482,25 +501,24 @@ main(int argc, char *argv[]) -> int
 		update(opt_cache_dir);
 	} else if (std::strcmp(args[optind], "build") == 0) {
 		build(opt_cache_dir, opt_schemes, opt_templates, opt_output);
-	} else if (std::strcmp(args[optind], "list-templates") == 0) {
-		list_templates(opt_cache_dir);
-	} else if (std::strcmp(args[optind], "list-schemes") == 0) {
-		list_schemes(opt_cache_dir);
+	} else if (std::strcmp(args[optind], "list") == 0) {
+		list(opt_cache_dir, opt_show_scheme, opt_show_template);
 	} else if (std::strcmp(args[optind], "version") == 0) {
 		std::cout << "cbase16-0.4.0" << std::endl;
 	} else if (std::strcmp(args[optind], "help") == 0) {
 		std::cout << "usage: cbase16 [command] [options]\n"
 			     "command:\n"
-			     "   update         -- fetch all necessary sources for building\n"
-			     "   build          -- generate colorscheme templates\n"
-			     "   list-templates -- list available templates\n"
-			     "   list-schemes   -- list available schemes\n"
-			     "   version        -- display version\n"
-			     "   help           -- display usage message\n"
+			     "   update  -- fetch all necessary sources for building\n"
+			     "   build   -- generate colorscheme templates\n"
+			     "   list    -- display available schemes and templates\n"
+			     "   version -- display version\n"
+			     "   help    -- display usage message\n"
 			     "options:\n"
 			     "   -c -- specify cache directory\n"
-			     "   -s -- only build specified schemes\n"
-			     "   -t -- only build specified templates\n"
+			     "   -s -- only build specified schemes when use with [build]\n"
+			     "         only show schemes when use with [list]\n"
+			     "   -t -- only build specified templates when use with [build]\n"
+			     "         only show templates when use with [list]\n"
 			     "   -o -- specify output directory"
 			  << std::endl;
 	} else {

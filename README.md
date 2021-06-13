@@ -10,16 +10,19 @@ Command:
 
 - update: fetch all necessary sources for building
 - build: generate colorscheme templates
-- list-templates: list available templates
-- list-schemes: list available schemes
+- list: display available schemes and templates
 - version: display version
 - help: display usage message
 
 Options:
 
 - -c: set cache directory
-- -s: only build specified schemes
-- -t: only build specified templates
+- -s:
+  - only build specified schemes when use with `build`
+  - only show schemes when use with `list`
+- -t:
+  - only build specified templates when use with `build`
+  - only show templates when use with `list`
 - -o: set output directory
 
 ## File Structure
