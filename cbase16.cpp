@@ -47,8 +47,9 @@ void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, std::vector<std::string>, std::vector<std::string>,
            const std::filesystem::path &);
 auto get_terminal_size() -> std::vector<unsigned short>;
-void list_templates(const std::filesystem::path &);
-void list_schemes(const std::filesystem::path &);
+void list_templates(const std::filesystem::path &, const bool &);
+void list_schemes(const std::filesystem::path &, const bool &);
+void list(const std::filesystem::path &, const bool &, const bool &, const bool &);
 
 void
 clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const std::string &source)
@@ -337,9 +338,16 @@ get_terminal_size() -> std::vector<unsigned short>
 }
 
 void
-list_templates(const std::filesystem::path &opt_cache_dir)
+list_templates(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 {
 	std::vector<Template> templates = get_templates(opt_cache_dir);
+
+	if (opt_raw) {
+		for (const Template &t : templates)
+			std::cout << t.name << std::endl;
+		return;
+	}
+
 	std::vector<unsigned short> terminal_size = get_terminal_size();
 
 	int index = 0;
@@ -378,9 +386,16 @@ list_templates(const std::filesystem::path &opt_cache_dir)
 }
 
 void
-list_schemes(const std::filesystem::path &opt_cache_dir)
+list_schemes(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 {
 	std::vector<Scheme> schemes = get_schemes(opt_cache_dir);
+
+	if (opt_raw) {
+		for (const Scheme &s : schemes)
+			std::cout << s.slug << std::endl;
+		return;
+	}
+
 	std::vector<unsigned short> terminal_size = get_terminal_size();
 
 	int index = 0;
@@ -420,17 +435,21 @@ list_schemes(const std::filesystem::path &opt_cache_dir)
 
 void
 list(const std::filesystem::path &opt_cache_dir, const bool &opt_show_scheme,
-     const bool &opt_show_template)
+     const bool &opt_show_template, const bool &opt_raw)
 {
-	if (opt_show_scheme) {
+	if (opt_show_scheme && opt_show_template) {
 		std::cout << "--- scheme ---" << std::endl;
-		list_schemes(opt_cache_dir);
+		list_schemes(opt_cache_dir, opt_raw);
+		std::cout << "--- template ---" << std::endl;
+		list_templates(opt_cache_dir, opt_raw);
+		return;
 	}
 
-	if (opt_show_template) {
-		std::cout << "--- template ---" << std::endl;
-		list_templates(opt_cache_dir);
-	}
+	if (opt_show_scheme)
+		list_schemes(opt_cache_dir, opt_raw);
+
+	if (opt_show_template)
+		list_templates(opt_cache_dir, opt_raw);
 }
 
 auto
@@ -449,6 +468,7 @@ main(int argc, char *argv[]) -> int
 
 	bool opt_show_scheme = true;
 	bool opt_show_template = true;
+	bool opt_raw = false;
 
 #if defined(__linux__)
 	if (std::getenv("XDG_CACHE_HOME") != nullptr) // NOLINT (concurrency-mt-unsafe)
@@ -465,7 +485,7 @@ main(int argc, char *argv[]) -> int
 	if (!std::filesystem::is_directory(opt_cache_dir))
 		std::filesystem::create_directory(opt_cache_dir);
 
-	while ((opt = getopt(argc, argv, "c:s::t::o:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+	while ((opt = getopt(argc, argv, "c:s::t::o:r")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 		switch (opt) {
 		case 'c':
 			opt_cache_dir = optarg;
@@ -497,6 +517,9 @@ main(int argc, char *argv[]) -> int
 		case 'o':
 			opt_output = optarg;
 			break;
+		case 'r':
+			opt_raw = true;
+			break;
 		}
 	}
 
@@ -510,7 +533,7 @@ main(int argc, char *argv[]) -> int
 	} else if (std::strcmp(args[optind], "build") == 0) {
 		build(opt_cache_dir, opt_schemes, opt_templates, opt_output);
 	} else if (std::strcmp(args[optind], "list") == 0) {
-		list(opt_cache_dir, opt_show_scheme, opt_show_template);
+		list(opt_cache_dir, opt_show_scheme, opt_show_template, opt_raw);
 	} else if (std::strcmp(args[optind], "version") == 0) {
 		std::cout << "cbase16-0.4.0" << std::endl;
 	} else if (std::strcmp(args[optind], "help") == 0) {
@@ -527,7 +550,8 @@ main(int argc, char *argv[]) -> int
 			     "         only show schemes when use with [list]\n"
 			     "   -t -- only build specified templates when use with [build]\n"
 			     "         only show templates when use with [list]\n"
-			     "   -o -- specify output directory"
+			     "   -o -- specify output directory\n"
+			     "   -r -- list items in single column"
 			  << std::endl;
 	} else {
 		std::cout << "error: invalid command: " << args[optind] << std::endl;

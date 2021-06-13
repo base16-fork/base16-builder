@@ -24,6 +24,7 @@ Options:
   - only build specified templates when use with `build`
   - only show templates when use with `list`
 - -o: set output directory
+- -r: list items in a single column
 
 ## File Structure
 
