@@ -46,8 +46,9 @@ running directory.
 
 ## Dependencies
 
-- libgit2
-- yaml-cpp
+- gcc >= 11.1.0
+- libgit2 >= 1.1.0
+- yaml-cpp >= 0.6.3
 
 ## Installation
 
