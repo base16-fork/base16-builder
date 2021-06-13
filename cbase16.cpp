@@ -3,6 +3,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <span>
@@ -11,6 +12,12 @@
 
 #include <git2.h>
 #include <yaml-cpp/yaml.h>
+
+#ifdef __linux__
+#include <sys/ioctl.h>
+#elif _WIN32
+#include <Windows.h>
+#endif
 
 struct Template {
 	std::string name;
@@ -39,6 +46,7 @@ auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, std::vector<std::string>, std::vector<std::string>,
            const std::filesystem::path &);
+auto get_terminal_size() -> std::vector<unsigned short>;
 void list_templates(const std::filesystem::path &);
 void list_schemes(const std::filesystem::path &);
 
@@ -301,20 +309,109 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 	}
 }
 
+auto
+get_terminal_size() -> std::vector<unsigned short>
+{
+	unsigned short width = 0;
+	unsigned short height = 0;
+	std::vector<unsigned short> size(2);
+
+#if defined(__linux__)
+	struct winsize w {
+		width, height
+	};
+	ioctl(fileno(stdout), TIOCGWINSZ, &w); // NOLINT (cppcoreguidelines-pro-type-vararg)
+	width = w.ws_col;
+	height = w.ws_row;
+#elif defined(_WIN32)
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+	width = (int)(csbi.srWindow.Right - csbi.srWindow.Left + 1);
+	height = (int)(csbi.srWindow.Bottom - csbi.srWindow.Top + 1);
+#endif
+
+	size[0] = width;
+	size[1] = height;
+
+	return size;
+}
+
 void
 list_templates(const std::filesystem::path &opt_cache_dir)
 {
 	std::vector<Template> templates = get_templates(opt_cache_dir);
-	for (const Template &t : templates)
-		std::cout << t.name << std::endl;
+	std::vector<unsigned short> terminal_size = get_terminal_size();
+
+	int index = 0;
+	unsigned short length = 0;
+	unsigned short num_of_element = templates.size();
+
+	for (const Template &t : templates) {
+		if (t.name.length() > length)
+			length = t.name.length();
+	}
+
+	unsigned short num_of_column = terminal_size[0] / (length + 1);
+	unsigned short num_of_row = num_of_element / num_of_column;
+	unsigned short remainder = num_of_element % num_of_column;
+	unsigned short padding = length + 1;
+
+	for (int row = 0; row < num_of_row; ++row) {
+		if (row != 0)
+			std::cout << std::endl;
+		for (int column = 0; column < num_of_column; ++column) {
+			std::cout << std::left << std::setw(padding) << templates[index].name << std::setw(padding);
+			index += 1;
+		}
+	}
+
+	std::cout << std::endl;
+
+	for (int column = 0; column <= remainder; ++column) {
+		std::cout << std::left << std::setw(padding) << templates[index].name << std::setw(padding);
+		index += 1;
+	}
+
+	std::cout << std::endl;
 }
 
 void
 list_schemes(const std::filesystem::path &opt_cache_dir)
 {
 	std::vector<Scheme> schemes = get_schemes(opt_cache_dir);
-	for (const Scheme &s : schemes)
-		std::cout << s.slug << std::endl;
+	std::vector<unsigned short> terminal_size = get_terminal_size();
+
+	int index = 0;
+	unsigned short length = 0;
+	unsigned short num_of_element = schemes.size();
+
+	for (const Scheme &s : schemes) {
+		if (s.slug.length() > length)
+			length = s.slug.length();
+	}
+
+	unsigned short num_of_column = terminal_size[0] / (length + 1);
+	unsigned short num_of_row = num_of_element / num_of_column;
+	unsigned short remainder = num_of_element % num_of_column;
+	unsigned short padding = length + 1;
+
+	for (int row = 0; row < num_of_row; ++row) {
+		if (row != 0)
+			std::cout << std::endl;
+		for (int column = 0; column < num_of_column; ++column) {
+			std::cout << std::left << std::setw(padding) << schemes[index].slug << std::setw(padding);
+			index += 1;
+		}
+	}
+
+	std::cout << std::endl;
+
+	for (int column = 0; column <= remainder; ++column) {
+		std::cout << std::left << std::setw(padding) << schemes[index].slug << std::setw(padding);
+		index += 1;
+	}
+
+	std::cout << std::endl;
 }
 
 auto
