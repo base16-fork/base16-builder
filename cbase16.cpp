@@ -445,12 +445,15 @@ main(int argc, char *argv[]) -> int
 	bool opt_show_scheme = true;
 	bool opt_show_template = true;
 
+#if defined(__linux__)
 	if (std::getenv("XDG_CACHE_HOME") != nullptr) // NOLINT (concurrency-mt-unsafe)
 		opt_cache_dir /= std::getenv("XDG_CACHE_HOME"); // NOLINT (concurrency-mt-unsafe)
-	else if (std::getenv("LOCALAPPDATA") != nullptr) // NOLINT (concurrency-mt-unsafe)
-		opt_cache_dir /= std::getenv("LOCALAPPDATA"); // NOLINT (concurrency-mt-unsafe)
 	else
 		opt_cache_dir /= (std::filesystem::path)std::getenv("HOME") / ".cache"; // NOLINT (concurrency-mt-unsafe)
+#elif defined(_WIN32)
+	if (std::getenv("LOCALAPPDATA") != nullptr) // NOLINT (concurrency-mt-unsafe)
+		opt_cache_dir /= std::getenv("LOCALAPPDATA"); // NOLINT (concurrency-mt-unsafe)
+#endif
 
 	opt_cache_dir /= "cbase16";
 
