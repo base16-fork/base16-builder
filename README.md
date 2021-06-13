@@ -10,6 +10,8 @@ Command:
 
 - update: fetch all necessary sources for building
 - build: generate colorscheme templates
+- list-templates: list available templates
+- list-schemes: list available schemes
 - version: display version
 - help: display usage message
 

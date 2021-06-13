@@ -39,6 +39,8 @@ auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, std::vector<std::string>, std::vector<std::string>,
            const std::filesystem::path &);
+void list_templates(const std::filesystem::path &);
+void list_schemes(const std::filesystem::path &);
 
 void
 clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const std::string &source)
@@ -299,6 +301,22 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 	}
 }
 
+void
+list_templates(const std::filesystem::path &opt_cache_dir)
+{
+	std::vector<Template> templates = get_templates(opt_cache_dir);
+	for (const Template &t : templates)
+		std::cout << t.name << std::endl;
+}
+
+void
+list_schemes(const std::filesystem::path &opt_cache_dir)
+{
+	std::vector<Scheme> schemes = get_schemes(opt_cache_dir);
+	for (const Scheme &s : schemes)
+		std::cout << s.slug << std::endl;
+}
+
 auto
 main(int argc, char *argv[]) -> int
 {
@@ -367,15 +385,21 @@ main(int argc, char *argv[]) -> int
 		update(opt_cache_dir);
 	} else if (std::strcmp(args[optind], "build") == 0) {
 		build(opt_cache_dir, opt_schemes, opt_templates, opt_output);
+	} else if (std::strcmp(args[optind], "list-templates") == 0) {
+		list_templates(opt_cache_dir);
+	} else if (std::strcmp(args[optind], "list-schemes") == 0) {
+		list_schemes(opt_cache_dir);
 	} else if (std::strcmp(args[optind], "version") == 0) {
 		std::cout << "cbase16-0.4.0" << std::endl;
 	} else if (std::strcmp(args[optind], "help") == 0) {
 		std::cout << "usage: cbase16 [command] [options]\n"
 			     "command:\n"
-			     "   update  -- fetch all necessary sources for building\n"
-			     "   build   -- generate colorscheme templates\n"
-			     "   version -- display version\n"
-			     "   help    -- display usage message\n"
+			     "   update         -- fetch all necessary sources for building\n"
+			     "   build          -- generate colorscheme templates\n"
+			     "   list-templates -- list available templates\n"
+			     "   list-schemes   -- list available schemes\n"
+			     "   version        -- display version\n"
+			     "   help           -- display usage message\n"
 			     "options:\n"
 			     "   -c -- specify cache directory\n"
 			     "   -s -- only build specified schemes\n"
