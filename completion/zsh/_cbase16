@@ -1,24 +1,40 @@
 #compdef cbase16
 
+(( $+function[_list_templates] )) ||
+_list_templates() {
+	local -a templates
+	templates=($(cbase16 list -t -r))
+	_describe 'template' templates
+}
+
+(( $+function[_list_schemes] )) ||
+_list_schemes() {
+	local -a schemes
+	schemes=($(cbase16 list -s -r))
+	_describe 'scheme' schemes
+}
+
 (( $+function[_cbase16_update] )) ||
 _cbase16_update() {
-	local -a _build_options
-	_build_options=(
-		'-c:set cache directory'
-	)
-	_describe "option" _update_options
+	_arguments -C \
+		'-c[set cache directory]:directory:_directories'
 }
 
 (( $+function[_cbase16_build] )) ||
 _cbase16_build() {
-	local -a _build_options
-	_build_options=(
-		'-c:set cache directory'
-		'-s:only build specified schemes'
-		'-t:only build specified templates'
-		'-o:set output directory'
-	)
-	_describe "option" _build_options
+	_arguments -C \
+		'-c[set cache directory]:directory:_directories' \
+		'-s[only build specified schemes]:scheme:_list_schemes' \
+		'-t[only build specified templates]:template:_list_templates' \
+		'-o[set output directory]:directory:_directories'
+}
+
+(( $+function[_cbase16_list] )) ||
+_cbase16_list() {
+	_arguments -C \
+		'-s[display schemes only]' \
+		'-t[display templates only]' \
+		'-r[print items in a single column]' \
 }
 
 (( $+functions[_cbase16_commands] )) ||
@@ -27,6 +43,7 @@ _cbase16_commmands() {
 	_cbase16_commands=(
 		'update:fetch all necessary sources for building'
 		'build:generate colorscheme templates'
+		'list:display available schemes and templates'
 		'version:display version'
 		'help:display usage message'
 	)
@@ -41,11 +58,7 @@ _cbase16_commmands() {
 		if (( $#cmd )); then
 			curcontext="${curcontext%:*:*}:cbase16-${cmd}:"
 
-			if (( CURRENT == 2 )); then
-				_call_function ret _cbase16_$cmd || _message 'no more arguments'
-			else
-				_message "no more available options"
-			fi
+			_call_function ret _cbase16_$cmd || _message 'no more arguments'
 		else
 			_message "unknown cbase16 command: $words[1]"
 		fi
