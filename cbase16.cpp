@@ -474,7 +474,8 @@ main(int argc, char *argv[]) -> int
 	if (std::getenv("XDG_CACHE_HOME") != nullptr) // NOLINT (concurrency-mt-unsafe)
 		opt_cache_dir /= std::getenv("XDG_CACHE_HOME"); // NOLINT (concurrency-mt-unsafe)
 	else
-		opt_cache_dir /= (std::filesystem::path)std::getenv("HOME") / ".cache"; // NOLINT (concurrency-mt-unsafe)
+		// NOLINTNEXTLINE (concurrency-mt-unsafe)
+		opt_cache_dir /= (std::filesystem::path)std::getenv("HOME") / ".cache";
 #elif defined(_WIN32)
 	if (std::getenv("LOCALAPPDATA") != nullptr) // NOLINT (concurrency-mt-unsafe)
 		opt_cache_dir /= std::getenv("LOCALAPPDATA"); // NOLINT (concurrency-mt-unsafe)
