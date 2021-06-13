@@ -122,33 +122,34 @@ get_templates(const std::filesystem::path &opt_cache_dir) -> std::vector<Templat
 
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(opt_cache_dir / "templates")) {
-		std::string config_file = entry.path() / "templates" / "config.yaml";
-		std::string template_file = entry.path() / "templates" / "default.mustache";
+		for (const std::filesystem::directory_entry &file :
+		     std::filesystem::directory_iterator(entry.path() / "templates")) {
+			if (file.path().extension() == ".mustache") {
+				Template t;
+				YAML::Node config = YAML::LoadFile(entry.path() / "templates" / "config.yaml");
+				t.name = entry.path().stem().string();
+				for (YAML::const_iterator it = config.begin(); it != config.end(); ++it) {
+					YAML::Node node = config[it->first.as<std::string>()];
+					if (it->first.as<std::string>() == file.path().stem().string()) {
+						if (node["extension"].Type() != YAML::NodeType::Null)
+							t.extension = node["extension"].as<std::string>();
 
-		YAML::Node config = YAML::LoadFile(config_file);
-		std::ifstream templet(template_file, std::ios::binary | std::ios::ate);
+						t.output = node["output"].as<std::string>();
+					}
+				}
 
-		Template t;
-		t.name = entry.path().stem().string();
-		for (YAML::const_iterator it = config.begin(); it != config.end(); ++it) {
-			YAML::Node node = config[it->first.as<std::string>()];
-			if (node["extension"].Type() != YAML::NodeType::Null)
-				t.extension = node["extension"].as<std::string>();
-			else
-				t.extension = "";
+				std::ifstream templet(file.path().string(), std::ios::binary | std::ios::ate);
+				if (templet.good()) {
+					templet.seekg(0, std::ios::end);
+					t.data.resize(templet.tellg());
+					templet.seekg(0, std::ios::beg);
+					templet.read(&t.data[0], (long)t.data.size());
+					templet.close();
+				}
 
-			t.output = node["output"].as<std::string>();
+				templates.emplace_back(t);
+			}
 		}
-
-		if (templet.good()) {
-			templet.seekg(0, std::ios::end);
-			t.data.resize(templet.tellg());
-			templet.seekg(0, std::ios::beg);
-			templet.read(&t.data[0], (long)t.data.size());
-			templet.close();
-		}
-
-		templates.emplace_back(t);
 	}
 
 	return templates;
