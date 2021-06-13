@@ -13,9 +13,9 @@
 #include <git2.h>
 #include <yaml-cpp/yaml.h>
 
-#ifdef __linux__
+#if defined(__linux__)
 #include <sys/ioctl.h>
-#elif _WIN32
+#elif defined(_WIN32)
 #include <Windows.h>
 #endif
 
