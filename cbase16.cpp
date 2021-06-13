@@ -307,6 +307,7 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 				            data[base + "-hex-bgr"]);
 			}
 
+			replace_all(t.data, "{{scheme-slug}}", s.slug);
 			replace_all(t.data, "{{scheme-name}}", s.name);
 			replace_all(t.data, "{{scheme-author}}", s.author);
 
