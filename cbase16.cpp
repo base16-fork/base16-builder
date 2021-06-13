@@ -254,10 +254,6 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 			            opt_templates.end())
 				continue;
 
-			std::map<std::string, std::string> data;
-			data["scheme-slug"] = s.slug;
-			data["scheme-name"] = s.name;
-			data["scheme-author"] = s.author;
 			for (const auto &[base, color] : s.colors) {
 				std::vector<std::string> hex = { color.substr(0, 2),
 					                         color.substr(2, 2),
@@ -265,46 +261,27 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 				std::vector<int> rgb = hex_to_rgb(color);
 				std::vector<long double> dec = rgb_to_dec(rgb);
 
-				data[base + "-hex-r"] = hex[0];
-				data[base + "-rgb-r"] = std::to_string(rgb[0]);
-				data[base + "-dec-r"] = std::to_string(dec[0]);
+				replace_all(t.data, "{{" + base + "-hex-r" + "}}", hex[0]);
+				replace_all(t.data, "{{" + base + "-hex-g" + "}}", hex[1]);
+				replace_all(t.data, "{{" + base + "-hex-b" + "}}", hex[2]);
 
-				replace_all(t.data, "{{" + base + "-hex-r" + "}}",
-				            data[base + "-hex-r"]);
 				replace_all(t.data, "{{" + base + "-rgb-r" + "}}",
-				            data[base + "-rgb-r"]);
-				replace_all(t.data, "{{" + base + "-dec-r" + "}}",
-				            data[base + "-dec-r"]);
-
-				data[base + "-hex-g"] = hex[1];
-				data[base + "-rgb-g"] = std::to_string(rgb[1]);
-				data[base + "-dec-g"] = std::to_string(dec[1]);
-
-				replace_all(t.data, "{{" + base + "-hex-g" + "}}",
-				            data[base + "-hex-g"]);
+				            std::to_string(rgb[0]));
 				replace_all(t.data, "{{" + base + "-rgb-g" + "}}",
-				            data[base + "-rgb-g"]);
-				replace_all(t.data, "{{" + base + "-dec-g" + "}}",
-				            data[base + "-dec-g"]);
-
-				data[base + "-hex-b"] = hex[2];
-				data[base + "-rgb-b"] = std::to_string(rgb[2]);
-				data[base + "-dec-b"] = std::to_string(rgb[2]);
-
-				replace_all(t.data, "{{" + base + "-hex-b" + "}}",
-				            data[base + "-hex-b"]);
+				            std::to_string(rgb[1]));
 				replace_all(t.data, "{{" + base + "-rgb-b" + "}}",
-				            data[base + "-rgb-b"]);
+				            std::to_string(rgb[2]));
+
+				replace_all(t.data, "{{" + base + "-dec-r" + "}}",
+				            std::to_string(dec[0]));
+				replace_all(t.data, "{{" + base + "-dec-g" + "}}",
+				            std::to_string(dec[1]));
 				replace_all(t.data, "{{" + base + "-dec-b" + "}}",
-				            data[base + "-dec-b"]);
+				            std::to_string(dec[2]));
 
-				data[base + "-hex"] = color;
-				data[base + "-hex-bgr"] = hex[0] + hex[1] + hex[2];
-
-				replace_all(t.data, "{{" + base + "-hex" + "}}",
-				            data[base + "-hex"]);
+				replace_all(t.data, "{{" + base + "-hex" + "}}", color);
 				replace_all(t.data, "{{" + base + "-hex-bgr" + "}}",
-				            data[base + "-hex-bgr"]);
+				            hex[0] + hex[1] + hex[2]);
 			}
 
 			replace_all(t.data, "{{scheme-slug}}", s.slug);
