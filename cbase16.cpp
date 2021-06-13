@@ -27,6 +27,7 @@ struct Scheme {
 };
 
 constexpr int HEX_MIN_LENGTH = 6;
+constexpr int RGB_MIN_SIZE = 3;
 constexpr int RGB_DEC = 255;
 
 void clone(const std::filesystem::path &, std::string &, std::string &);
@@ -34,6 +35,7 @@ void update(const std::filesystem::path &);
 auto get_templates(const std::filesystem::path &) -> std::vector<Template>;
 auto get_schemes(const std::filesystem::path &) -> std::vector<Scheme>;
 auto hex_to_rgb(const std::string &) -> std::vector<int>;
+auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, std::vector<std::string>, std::vector<std::string>,
            const std::filesystem::path &);
@@ -203,6 +205,21 @@ hex_to_rgb(const std::string &hex) -> std::vector<int>
 	return rgb;
 }
 
+auto
+rgb_to_dec(const std::vector<int> &rgb) -> std::vector<long double>
+{
+	std::vector<long double> dec(3);
+
+	if (rgb.size() != RGB_MIN_SIZE)
+		return dec;
+
+#pragma omp parallel for default(none) shared(dec, rgb)
+	for (int i = 0; i < 3; ++i)
+		dec[i] = (long double)rgb[i] / RGB_DEC;
+
+	return dec;
+}
+
 void
 replace_all(std::string &str, const std::string &from, const std::string &to)
 {
@@ -246,11 +263,11 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 					                         color.substr(2, 2),
 					                         color.substr(4, 2) };
 				std::vector<int> rgb = hex_to_rgb(color);
+				std::vector<long double> dec = rgb_to_dec(rgb);
 
 				data[base + "-hex-r"] = hex[0];
 				data[base + "-rgb-r"] = std::to_string(rgb[0]);
-				data[base + "-dec-r"] =
-					std::to_string((long double)rgb[0] / RGB_DEC);
+				data[base + "-dec-r"] = std::to_string(dec[0]);
 
 				replace_all(t.data, "{{" + base + "-hex-r" + "}}",
 				            data[base + "-hex-r"]);
@@ -261,8 +278,7 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 
 				data[base + "-hex-g"] = hex[1];
 				data[base + "-rgb-g"] = std::to_string(rgb[1]);
-				data[base + "-dec-g"] =
-					std::to_string((long double)rgb[1] / RGB_DEC);
+				data[base + "-dec-g"] = std::to_string(dec[1]);
 
 				replace_all(t.data, "{{" + base + "-hex-g" + "}}",
 				            data[base + "-hex-g"]);
@@ -273,8 +289,7 @@ build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_s
 
 				data[base + "-hex-b"] = hex[2];
 				data[base + "-rgb-b"] = std::to_string(rgb[2]);
-				data[base + "-dec-b"] =
-					std::to_string((long double)rgb[2] / RGB_DEC);
+				data[base + "-dec-b"] = std::to_string(rgb[2]);
 
 				replace_all(t.data, "{{" + base + "-hex-b" + "}}",
 				            data[base + "-hex-b"]);
