@@ -377,7 +377,7 @@ list_templates(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 
 	std::cout << std::endl;
 
-	for (int column = 0; column <= remainder; ++column) {
+	for (int column = 0; column < remainder; ++column) {
 		std::cout << std::left << std::setw(padding) << templates[index].name
 			  << std::setw(padding);
 		index += 1;
@@ -425,7 +425,7 @@ list_schemes(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 
 	std::cout << std::endl;
 
-	for (int column = 0; column <= remainder; ++column) {
+	for (int column = 0; column < remainder; ++column) {
 		std::cout << std::left << std::setw(padding) << schemes[index].slug
 			  << std::setw(padding);
 		index += 1;
