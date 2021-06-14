@@ -3,14 +3,14 @@
 (( $+function[_list_templates] )) ||
 _list_templates() {
 	local -a templates
-	templates=($(cbase16 list -t -r))
+	templates=($(cbase16 list -T -r))
 	_describe 'template' templates
 }
 
 (( $+function[_list_schemes] )) ||
 _list_schemes() {
 	local -a schemes
-	schemes=($(cbase16 list -s -r))
+	schemes=($(cbase16 list -S -r))
 	_describe 'scheme' schemes
 }
 
