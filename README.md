@@ -17,12 +17,10 @@ Command:
 Options:
 
 - -c: set cache directory
-- -s:
-  - only build specified schemes when use with `build`
-  - only show schemes when use with `list`
-- -t:
-  - only build specified templates when use with `build`
-  - only show templates when use with `list`
+- -s: only build specified schemes
+- -t: only build specified templates
+- -S: only show schemes
+- -T: only show templates
 - -o: set output directory
 - -r: list items in a single column
 

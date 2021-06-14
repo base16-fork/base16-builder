@@ -487,13 +487,12 @@ main(int argc, char *argv[]) -> int
 	if (!std::filesystem::is_directory(opt_cache_dir))
 		std::filesystem::create_directory(opt_cache_dir);
 
-	while ((opt = getopt(argc, argv, "c:s::t::o:r")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+	while ((opt = getopt(argc, argv, "c:s:t:o:STr")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 		switch (opt) {
 		case 'c':
 			opt_cache_dir = optarg;
 			break;
 		case 's':
-			opt_show_template = false;
 			index = optind - 1;
 			while (index < argc) {
 				std::string next = args[index];
@@ -505,7 +504,6 @@ main(int argc, char *argv[]) -> int
 			}
 			break;
 		case 't':
-			opt_show_scheme = false;
 			index = optind - 1;
 			while (index < argc) {
 				std::string next = args[index];
@@ -515,6 +513,12 @@ main(int argc, char *argv[]) -> int
 				else
 					break;
 			}
+			break;
+		case 'S':
+			opt_show_template = false;
+			break;
+		case 'T':
+			opt_show_scheme = false;
 			break;
 		case 'o':
 			opt_output = optarg;
@@ -548,10 +552,10 @@ main(int argc, char *argv[]) -> int
 			     "   help    -- display usage message\n"
 			     "options:\n"
 			     "   -c -- specify cache directory\n"
-			     "   -s -- only build specified schemes when use with [build]\n"
-			     "         only show schemes when use with [list]\n"
-			     "   -t -- only build specified templates when use with [build]\n"
-			     "         only show templates when use with [list]\n"
+			     "   -s -- only build specified schemes\n"
+			     "   -S -- only show schemes\n"
+			     "   -t -- only build specified templates\n"
+			     "   -T -- only show templates\n"
 			     "   -o -- specify output directory\n"
 			     "   -r -- list items in single column"
 			  << std::endl;

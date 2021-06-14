@@ -6,7 +6,7 @@ MANPREFIX = $(PREFIX)/share/man
 
 PKG_CONFIG = pkg-config
 
-BCXXFLAGS = $(CFLAGS) $(CXXFLAGS) --std=gnu++20 -fopenmp
+BCXXFLAGS = $(CFLAGS) $(CXXFLAGS) --std=c++20 -fopenmp
 BLDFLAGS = `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2`
 SRC = cbase16.cpp
 
