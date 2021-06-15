@@ -37,15 +37,16 @@ constexpr int HEX_MIN_LENGTH = 6;
 constexpr int RGB_MIN_SIZE = 3;
 constexpr int RGB_DEC = 255;
 
-void clone(const std::filesystem::path &, std::string &, std::string &);
+void clone(const std::filesystem::path &, const std::string &, const std::string &);
 void update(const std::filesystem::path &);
 auto get_templates(const std::filesystem::path &) -> std::vector<Template>;
 auto get_schemes(const std::filesystem::path &) -> std::vector<Scheme>;
 auto hex_to_rgb(const std::string &) -> std::vector<int>;
 auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
-void build(const std::filesystem::path &, std::vector<std::string>, std::vector<std::string>,
-           const std::filesystem::path &);
+void build(const std::filesystem::path &, const std::filesystem::path &,
+           const std::filesystem::path &, const std::vector<std::string> &,
+           const std::vector<std::string> &, const std::filesystem::path &);
 auto get_terminal_size() -> std::vector<unsigned short>;
 void list_templates(const std::filesystem::path &, const bool &);
 void list_schemes(const std::filesystem::path &, const bool &);
