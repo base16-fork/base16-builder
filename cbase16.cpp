@@ -487,76 +487,91 @@ main(int argc, char *argv[]) -> int
 	if (!std::filesystem::is_directory(opt_cache_dir))
 		std::filesystem::create_directory(opt_cache_dir);
 
-	while ((opt = getopt(argc, argv, "c:s:t:o:STr")) != EOF) { // NOLINT (concurrency-mt-unsafe)
-		switch (opt) {
-		case 'c':
-			opt_cache_dir = optarg;
-			break;
-		case 's':
-			index = optind - 1;
-			while (index < argc) {
-				std::string next = args[index];
-				index++;
-				if (next[0] != '-')
-					opt_schemes.emplace_back(next);
-				else
-					break;
-			}
-			break;
-		case 't':
-			index = optind - 1;
-			while (index < argc) {
-				std::string next = args[index];
-				index++;
-				if (next[0] != '-')
-					opt_templates.emplace_back(next);
-				else
-					break;
-			}
-			break;
-		case 'S':
-			opt_show_template = false;
-			break;
-		case 'T':
-			opt_show_scheme = false;
-			break;
-		case 'o':
-			opt_output = optarg;
-			break;
-		case 'r':
-			opt_raw = true;
-			break;
-		}
-	}
-
 	if (args[optind] == nullptr) {
 		std::cout << "error: no command is detected" << std::endl;
 		return 1;
 	}
 
 	if (std::strcmp(args[optind], "update") == 0) {
+		while ((opt = getopt(argc, argv, "c")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+			switch (opt) {
+			case 'c':
+				opt_cache_dir = optarg;
+				break;
+			}
+		}
 		update(opt_cache_dir);
 	} else if (std::strcmp(args[optind], "build") == 0) {
+		while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+			switch (opt) {
+			case 'c':
+				opt_cache_dir = optarg;
+				break;
+			case 's':
+				index = optind - 1;
+				while (index < argc) {
+					std::string next = args[index];
+					index++;
+					if (next[0] != '-')
+						opt_schemes.emplace_back(next);
+					else
+						break;
+				}
+				break;
+			case 't':
+				index = optind - 1;
+				while (index < argc) {
+					std::string next = args[index];
+					index++;
+					if (next[0] != '-')
+						opt_templates.emplace_back(next);
+					else
+						break;
+				}
+				break;
+			case 'o':
+				opt_output = optarg;
+				break;
+			}
+		}
 		build(opt_cache_dir, opt_schemes, opt_templates, opt_output);
 	} else if (std::strcmp(args[optind], "list") == 0) {
+		while ((opt = getopt(argc, argv, "str")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+			switch (opt) {
+			case 's':
+				opt_show_scheme = true;
+				opt_show_template = false;
+				break;
+			case 't':
+				opt_show_scheme = false;
+				opt_show_template = true;
+				break;
+			case 'r':
+				opt_raw = true;
+				break;
+			}
+		}
 		list(opt_cache_dir, opt_show_scheme, opt_show_template, opt_raw);
 	} else if (std::strcmp(args[optind], "version") == 0) {
 		std::cout << "cbase16-0.4.0" << std::endl;
 	} else if (std::strcmp(args[optind], "help") == 0) {
-		std::cout << "usage: cbase16 [command] [options]\n"
+		std::cout << "usage: cbase16 [command] [options]\n\n"
 			     "command:\n"
 			     "   update  -- fetch all necessary sources for building\n"
 			     "   build   -- generate colorscheme templates\n"
 			     "   list    -- display available schemes and templates\n"
 			     "   version -- display version\n"
-			     "   help    -- display usage message\n"
-			     "options:\n"
+			     "   help    -- display usage message\n\n"
+			     "update options:\n"
+			     "   -c -- specify cache directory\n\n"
+			     "build options:\n"
 			     "   -c -- specify cache directory\n"
 			     "   -s -- only build specified schemes\n"
-			     "   -S -- only show schemes\n"
 			     "   -t -- only build specified templates\n"
-			     "   -T -- only show templates\n"
-			     "   -o -- specify output directory\n"
+			     "   -o -- specify output directory\n\n"
+			     "list options:\n"
+			     "   -s -- only show schemes\n"
+			     "   -t -- only show templates\n"
 			     "   -r -- list items in single column"
 			  << std::endl;
 	} else {

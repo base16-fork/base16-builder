@@ -14,15 +14,19 @@ Command:
 - version: display version
 - help: display usage message
 
-Options:
+Update options:
+- -c: specify cache directory
 
-- -c: set cache directory
+Build options:
+- -c: specify cache directory
 - -s: only build specified schemes
 - -t: only build specified templates
-- -S: only show schemes
-- -T: only show templates
-- -o: set output directory
-- -r: list items in a single column
+- -o: specify output directory
+
+List options:
+- -s: only show schemes
+- -t: only show templates
+- -r: list items in single column
 
 ## File Structure
 
