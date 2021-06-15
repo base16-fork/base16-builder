@@ -122,10 +122,15 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
+		if (!std::filesystem::is_regular_file(entry.path() / "templates" / "config.yaml")) {
+			std::cout << "error: config get config file for " << entry.path() << std::endl;
+			continue;
+		}
 		for (const std::filesystem::directory_entry &file :
 		     std::filesystem::directory_iterator(entry.path() / "templates")) {
 			if (file.path().extension() == ".mustache") {
 				Template t;
+
 				YAML::Node config =
 					YAML::LoadFile(entry.path() / "templates" / "config.yaml");
 				t.name = entry.path().stem().string();
