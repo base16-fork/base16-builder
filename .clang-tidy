@@ -28,7 +28,7 @@ CheckOptions:
   - key:             cert-dcl16-c.NewSuffixes
     value:           'L;LL;LU;LLU'
   - key:             cert-err61-cpp.MaxSize
-    value:           '-1'
+    value:           '0'
   - key:             cert-dcl51-cpp.AggressiveDependentMemberLookup
     value:           'false'
   - key:             cppcoreguidelines-macro-usage.CheckCapsOnly
@@ -78,7 +78,7 @@ CheckOptions:
   - key:             modernize-use-override.FinalSpelling
     value:           final
   - key:             cert-err09-cpp.MaxSize
-    value:           '-1'
+    value:           '0'
   - key:             performance-move-constructor-init.IncludeStyle
     value:           llvm
   - key:             modernize-loop-convert.UseCxx20ReverseRanges
