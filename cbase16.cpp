@@ -519,7 +519,13 @@ main(int argc, char *argv[]) -> int
 		while ((opt = getopt(argc, argv, "c")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 			switch (opt) {
 			case 'c':
-				opt_cache_dir = optarg;
+				if (std::filesystem::is_directory(optarg)) {
+					opt_cache_dir = optarg;
+				} else {
+					std::cout << "error: directory not found: " << optarg
+						  << std::endl;
+					return 1;
+				}
 				break;
 			}
 		}
@@ -536,7 +542,13 @@ main(int argc, char *argv[]) -> int
 		while ((opt = getopt(argc, argv, "c:T:S:t:s:o:")) != EOF) {
 			switch (opt) {
 			case 'c':
-				opt_cache_dir = optarg;
+				if (std::filesystem::is_directory(optarg)) {
+					opt_cache_dir = optarg;
+				} else {
+					std::cout << "error: directory not found: " << optarg
+						  << std::endl;
+					return 1;
+				}
 				break;
 			case 'T':
 				if (std::filesystem::is_directory(optarg)) {
