@@ -110,18 +110,18 @@ update(const std::filesystem::path &opt_cache_dir)
 }
 
 auto
-get_templates(const std::filesystem::path &opt_cache_dir) -> std::vector<Template>
+get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 {
 	std::vector<Template> templates;
 
-	if (!std::filesystem::is_directory(opt_cache_dir / "templates")) {
+	if (!std::filesystem::is_directory(directory)) {
 		std::cout << "warning: cache template directory is either empty or not found"
 			  << std::endl;
 		return templates;
 	}
 
 	for (const std::filesystem::directory_entry &entry :
-	     std::filesystem::directory_iterator(opt_cache_dir / "templates")) {
+	     std::filesystem::directory_iterator(directory)) {
 		for (const std::filesystem::directory_entry &file :
 		     std::filesystem::directory_iterator(entry.path() / "templates")) {
 			if (file.path().extension() == ".mustache") {
@@ -162,18 +162,18 @@ get_templates(const std::filesystem::path &opt_cache_dir) -> std::vector<Templat
 }
 
 auto
-get_schemes(const std::filesystem::path &opt_cache_dir) -> std::vector<Scheme>
+get_schemes(const std::filesystem::path &directory) -> std::vector<Scheme>
 {
 	std::vector<Scheme> schemes;
 
-	if (!std::filesystem::is_directory(opt_cache_dir / "schemes")) {
+	if (!std::filesystem::is_directory(directory)) {
 		std::cout << "warning: cache scheme directory is either empty or not found"
 			  << std::endl;
 		return schemes;
 	}
 
 	for (const std::filesystem::directory_entry &dir :
-	     std::filesystem::directory_iterator(opt_cache_dir / "schemes")) {
+	     std::filesystem::directory_iterator(directory)) {
 		for (const std::filesystem::directory_entry &file :
 		     std::filesystem::directory_iterator(dir)) {
 			if (file.is_regular_file() && file.path().extension() == ".yaml") {
@@ -252,11 +252,22 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 }
 
 void
-build(const std::filesystem::path &opt_cache_dir, std::vector<std::string> opt_schemes,
-      std::vector<std::string> opt_templates, const std::filesystem::path &opt_output)
+build(const std::filesystem::path &opt_cache_dir, const std::filesystem::path &opt_scheme_dir,
+      const std::filesystem::path &opt_template_dir, const std::vector<std::string> &opt_schemes,
+      const std::vector<std::string> &opt_templates, const std::filesystem::path &opt_output)
 {
-	std::vector<Scheme> schemes = get_schemes(opt_cache_dir);
-	std::vector<Template> templates = get_templates(opt_cache_dir);
+	std::vector<Scheme> schemes;
+	std::vector<Template> templates;
+
+	if (!opt_scheme_dir.empty())
+		schemes = get_schemes(opt_scheme_dir);
+	else
+		schemes = get_schemes(opt_cache_dir / "schemes");
+
+	if (!opt_template_dir.empty())
+		templates = get_templates(opt_template_dir);
+	else
+		templates = get_templates(opt_cache_dir / "templates");
 
 #pragma omp parallel for default(none) \
 	shared(opt_schemes, opt_templates, schemes, templates, opt_output)
@@ -347,7 +358,7 @@ get_terminal_size() -> std::vector<unsigned short>
 void
 list_templates(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 {
-	std::vector<Template> templates = get_templates(opt_cache_dir);
+	std::vector<Template> templates = get_templates(opt_cache_dir / "templates");
 
 	if (opt_raw) {
 		for (const Template &t : templates)
@@ -395,7 +406,7 @@ list_templates(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 void
 list_schemes(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 {
-	std::vector<Scheme> schemes = get_schemes(opt_cache_dir);
+	std::vector<Scheme> schemes = get_schemes(opt_cache_dir / "schemes");
 
 	if (opt_raw) {
 		for (const Scheme &s : schemes)
@@ -502,13 +513,34 @@ main(int argc, char *argv[]) -> int
 	} else if (std::strcmp(args[optind], "build") == 0) {
 		std::vector<std::string> opt_schemes;
 		std::vector<std::string> opt_templates;
+
+		std::filesystem::path opt_scheme_dir;
+		std::filesystem::path opt_template_dir;
 		std::filesystem::path opt_output = "output";
 
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
-		while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) {
+		while ((opt = getopt(argc, argv, "c:S:T:s:t:o:")) != EOF) {
 			switch (opt) {
 			case 'c':
 				opt_cache_dir = optarg;
+				break;
+			case 'S':
+				if (std::filesystem::is_directory(optarg)) {
+					opt_scheme_dir = optarg;
+				} else {
+					std::cout << "error: directory not found: " << optarg
+						  << std::endl;
+					return 1;
+				}
+				break;
+			case 'T':
+				if (std::filesystem::is_directory(optarg)) {
+					opt_template_dir = optarg;
+				} else {
+					std::cout << "error: directory not found: " << optarg
+						  << std::endl;
+					return 1;
+				}
 				break;
 			case 's':
 				index = optind - 1;
@@ -537,7 +569,8 @@ main(int argc, char *argv[]) -> int
 				break;
 			}
 		}
-		build(opt_cache_dir, opt_schemes, opt_templates, opt_output);
+		build(opt_cache_dir, opt_scheme_dir, opt_template_dir, opt_schemes, opt_templates,
+		      opt_output);
 	} else if (std::strcmp(args[optind], "list") == 0) {
 		bool opt_show_scheme = true;
 		bool opt_show_template = true;
@@ -573,6 +606,8 @@ main(int argc, char *argv[]) -> int
 			     "   -c -- specify cache directory\n\n"
 			     "build options:\n"
 			     "   -c -- specify cache directory\n"
+			     "   -S -- specify scheme directory\n"
+			     "   -T -- specify template directory\n"
 			     "   -s -- only build specified schemes\n"
 			     "   -t -- only build specified templates\n"
 			     "   -o -- specify output directory\n\n"

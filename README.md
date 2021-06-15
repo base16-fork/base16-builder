@@ -19,6 +19,8 @@ Update options:
 
 Build options:
 - -c: specify cache directory
+- -S: specify scheme directory
+- -T: specify template directory
 - -s: only build specified schemes
 - -t: only build specified templates
 - -o: specify output directory
