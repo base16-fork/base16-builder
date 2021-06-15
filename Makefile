@@ -20,7 +20,6 @@ options:
 
 cbase16: options
 	$(CXX) $(SRC) $(BLDFLAGS) $(BCXXFLAGS) -o $@
-	chmod 755 $@
 
 clean:
 	rm -f cbase16
