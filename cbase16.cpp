@@ -123,7 +123,8 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
 		if (!std::filesystem::is_regular_file(entry.path() / "templates" / "config.yaml")) {
-			std::cout << "error: config get config file for " << entry.path() << std::endl;
+			std::cout << "error: config get config file for " << entry.path()
+				  << std::endl;
 			continue;
 		}
 		for (const std::filesystem::directory_entry &file :
@@ -323,11 +324,13 @@ build(const std::filesystem::path &opt_cache_dir, const std::filesystem::path &o
 			replace_all(t.data, "{{scheme-author}}", s.author);
 
 			std::filesystem::path output_dir = opt_output / t.name / t.output;
-			std::filesystem::create_directories(output_dir);
-			std::ofstream output_file(output_dir / ("base16-" + s.slug + t.extension));
-			if (output_file.good()) {
-				output_file << t.data;
-				output_file.close();
+			if (std::filesystem::create_directories(output_dir)) {
+				std::ofstream output_file(output_dir /
+				                          ("base16-" + s.slug + t.extension));
+				if (output_file.good()) {
+					output_file << t.data;
+					output_file.close();
+				}
 			}
 		}
 	}
@@ -503,8 +506,13 @@ main(int argc, char *argv[]) -> int
 
 	opt_cache_dir /= "cbase16";
 
-	if (!std::filesystem::is_directory(opt_cache_dir))
-		std::filesystem::create_directory(opt_cache_dir);
+	if (!std::filesystem::is_directory(opt_cache_dir)) {
+		if (!std::filesystem::create_directory(opt_cache_dir)) {
+			std::cout << "error: cannot create cache directory at " << opt_cache_dir
+				  << std::endl;
+			return 1;
+		}
+	}
 
 	if (std::strcmp(args[optind], "update") == 0) {
 		while ((opt = getopt(argc, argv, "c")) != EOF) { // NOLINT (concurrency-mt-unsafe)
