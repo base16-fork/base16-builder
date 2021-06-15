@@ -283,6 +283,7 @@ build(const std::filesystem::path &opt_cache_dir, const std::filesystem::path &o
 			continue;
 
 #pragma omp parallel for default(none) shared(opt_templates, templates, s, opt_output)
+		// NOLINTNEXTLINE (openmp-exception-escape)
 		for (Template t : templates) {
 			if (!opt_templates.empty() &&
 			    std::find(opt_templates.begin(), opt_templates.end(), t.name) ==
