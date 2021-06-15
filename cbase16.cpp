@@ -461,15 +461,7 @@ main(int argc, char *argv[]) -> int
 
 	std::span args(argv, size_t(argc));
 
-	std::vector<std::string> opt_schemes;
-	std::vector<std::string> opt_templates;
-
 	std::filesystem::path opt_cache_dir;
-	std::filesystem::path opt_output = "output";
-
-	bool opt_show_scheme = true;
-	bool opt_show_template = true;
-	bool opt_raw = false;
 
 #if defined(__linux__)
 	if (std::getenv("XDG_CACHE_HOME") != nullptr) // NOLINT (concurrency-mt-unsafe)
@@ -502,6 +494,10 @@ main(int argc, char *argv[]) -> int
 		}
 		update(opt_cache_dir);
 	} else if (std::strcmp(args[optind], "build") == 0) {
+		std::vector<std::string> opt_schemes;
+		std::vector<std::string> opt_templates;
+		std::filesystem::path opt_output = "output";
+
 		while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 			switch (opt) {
 			case 'c':
@@ -536,6 +532,10 @@ main(int argc, char *argv[]) -> int
 		}
 		build(opt_cache_dir, opt_schemes, opt_templates, opt_output);
 	} else if (std::strcmp(args[optind], "list") == 0) {
+		bool opt_show_scheme = true;
+		bool opt_show_template = true;
+		bool opt_raw = false;
+
 		while ((opt = getopt(argc, argv, "str")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 			switch (opt) {
 			case 's':
