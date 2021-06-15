@@ -252,12 +252,12 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 }
 
 void
-build(const std::filesystem::path &opt_cache_dir, const std::filesystem::path &opt_scheme_dir,
-      const std::filesystem::path &opt_template_dir, const std::vector<std::string> &opt_schemes,
-      const std::vector<std::string> &opt_templates, const std::filesystem::path &opt_output)
+build(const std::filesystem::path &opt_cache_dir, const std::filesystem::path &opt_template_dir,
+      const std::filesystem::path &opt_scheme_dir, const std::vector<std::string> &opt_templates,
+      const std::vector<std::string> &opt_schemes, const std::filesystem::path &opt_output)
 {
-	std::vector<Scheme> schemes;
 	std::vector<Template> templates;
+	std::vector<Scheme> schemes;
 
 	if (!opt_scheme_dir.empty())
 		schemes = get_schemes(opt_scheme_dir);
@@ -270,7 +270,7 @@ build(const std::filesystem::path &opt_cache_dir, const std::filesystem::path &o
 		templates = get_templates(opt_cache_dir / "templates");
 
 #pragma omp parallel for default(none) \
-	shared(opt_schemes, opt_templates, schemes, templates, opt_output)
+	shared(opt_templates, opt_schemes, templates, schemes, opt_output)
 	for (const Scheme &s : schemes) {
 		if (!opt_schemes.empty() &&
 		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) == opt_schemes.end())
@@ -452,8 +452,8 @@ list_schemes(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 }
 
 void
-list(const std::filesystem::path &opt_cache_dir, const bool &opt_show_scheme,
-     const bool &opt_show_template, const bool &opt_raw)
+list(const std::filesystem::path &opt_cache_dir, const bool &opt_show_template,
+     const bool &opt_show_scheme, const bool &opt_raw)
 {
 	if (opt_show_scheme && opt_show_template) {
 		std::cout << "--- scheme ---" << std::endl;
@@ -511,27 +511,18 @@ main(int argc, char *argv[]) -> int
 		}
 		update(opt_cache_dir);
 	} else if (std::strcmp(args[optind], "build") == 0) {
-		std::vector<std::string> opt_schemes;
 		std::vector<std::string> opt_templates;
+		std::vector<std::string> opt_schemes;
 
-		std::filesystem::path opt_scheme_dir;
 		std::filesystem::path opt_template_dir;
+		std::filesystem::path opt_scheme_dir;
 		std::filesystem::path opt_output = "output";
 
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
-		while ((opt = getopt(argc, argv, "c:S:T:s:t:o:")) != EOF) {
+		while ((opt = getopt(argc, argv, "c:T:S:t:s:o:")) != EOF) {
 			switch (opt) {
 			case 'c':
 				opt_cache_dir = optarg;
-				break;
-			case 'S':
-				if (std::filesystem::is_directory(optarg)) {
-					opt_scheme_dir = optarg;
-				} else {
-					std::cout << "error: directory not found: " << optarg
-						  << std::endl;
-					return 1;
-				}
 				break;
 			case 'T':
 				if (std::filesystem::is_directory(optarg)) {
@@ -542,15 +533,13 @@ main(int argc, char *argv[]) -> int
 					return 1;
 				}
 				break;
-			case 's':
-				index = optind - 1;
-				while (index < argc) {
-					std::string next = args[index];
-					index++;
-					if (next[0] != '-')
-						opt_schemes.emplace_back(next);
-					else
-						break;
+			case 'S':
+				if (std::filesystem::is_directory(optarg)) {
+					opt_scheme_dir = optarg;
+				} else {
+					std::cout << "error: directory not found: " << optarg
+						  << std::endl;
+					return 1;
 				}
 				break;
 			case 't':
@@ -564,34 +553,45 @@ main(int argc, char *argv[]) -> int
 						break;
 				}
 				break;
+			case 's':
+				index = optind - 1;
+				while (index < argc) {
+					std::string next = args[index];
+					index++;
+					if (next[0] != '-')
+						opt_schemes.emplace_back(next);
+					else
+						break;
+				}
+				break;
 			case 'o':
 				opt_output = optarg;
 				break;
 			}
 		}
-		build(opt_cache_dir, opt_scheme_dir, opt_template_dir, opt_schemes, opt_templates,
+		build(opt_cache_dir, opt_template_dir, opt_scheme_dir, opt_templates, opt_schemes,
 		      opt_output);
 	} else if (std::strcmp(args[optind], "list") == 0) {
-		bool opt_show_scheme = true;
 		bool opt_show_template = true;
+		bool opt_show_scheme = true;
 		bool opt_raw = false;
 
-		while ((opt = getopt(argc, argv, "str")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+		while ((opt = getopt(argc, argv, "tsr")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 			switch (opt) {
-			case 's':
-				opt_show_scheme = true;
-				opt_show_template = false;
-				break;
 			case 't':
 				opt_show_scheme = false;
 				opt_show_template = true;
+				break;
+			case 's':
+				opt_show_scheme = true;
+				opt_show_template = false;
 				break;
 			case 'r':
 				opt_raw = true;
 				break;
 			}
 		}
-		list(opt_cache_dir, opt_show_scheme, opt_show_template, opt_raw);
+		list(opt_cache_dir, opt_show_template, opt_show_scheme, opt_raw);
 	} else if (std::strcmp(args[optind], "version") == 0) {
 		std::cout << "cbase16-0.4.0" << std::endl;
 	} else if (std::strcmp(args[optind], "help") == 0) {
@@ -606,14 +606,14 @@ main(int argc, char *argv[]) -> int
 			     "   -c -- specify cache directory\n\n"
 			     "build options:\n"
 			     "   -c -- specify cache directory\n"
-			     "   -S -- specify scheme directory\n"
 			     "   -T -- specify template directory\n"
-			     "   -s -- only build specified schemes\n"
+			     "   -S -- specify scheme directory\n"
 			     "   -t -- only build specified templates\n"
+			     "   -s -- only build specified schemes\n"
 			     "   -o -- specify output directory\n\n"
 			     "list options:\n"
-			     "   -s -- only show schemes\n"
 			     "   -t -- only show templates\n"
+			     "   -s -- only show schemes\n"
 			     "   -r -- list items in single column"
 			  << std::endl;
 	} else {

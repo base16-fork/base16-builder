@@ -19,15 +19,15 @@ Update options:
 
 Build options:
 - -c: specify cache directory
-- -S: specify scheme directory
 - -T: specify template directory
-- -s: only build specified schemes
+- -S: specify scheme directory
 - -t: only build specified templates
+- -s: only build specified schemes
 - -o: specify output directory
 
 List options:
-- -s: only show schemes
 - -t: only show templates
+- -s: only show schemes
 - -r: list items in single column
 
 ## File Structure
