@@ -49,7 +49,6 @@ running directory.
 
 ## Dependencies
 
-- gcc >= 11.1.0
 - libgit2 >= 1.1.0
 - yaml-cpp >= 0.6.3
 
