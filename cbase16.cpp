@@ -456,10 +456,15 @@ list(const std::filesystem::path &opt_cache_dir, const bool &opt_show_scheme,
 auto
 main(int argc, char *argv[]) -> int
 {
+	std::span args(argv, size_t(argc));
+
+	if (args[optind] == nullptr) {
+		std::cout << "error: no command is detected" << std::endl;
+		return 1;
+	}
+
 	int opt = 0;
 	int index = 0;
-
-	std::span args(argv, size_t(argc));
 
 	std::filesystem::path opt_cache_dir;
 
@@ -478,11 +483,6 @@ main(int argc, char *argv[]) -> int
 
 	if (!std::filesystem::is_directory(opt_cache_dir))
 		std::filesystem::create_directory(opt_cache_dir);
-
-	if (args[optind] == nullptr) {
-		std::cout << "error: no command is detected" << std::endl;
-		return 1;
-	}
 
 	if (std::strcmp(args[optind], "update") == 0) {
 		while ((opt = getopt(argc, argv, "c")) != EOF) { // NOLINT (concurrency-mt-unsafe)
