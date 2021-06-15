@@ -126,19 +126,25 @@ get_templates(const std::filesystem::path &opt_cache_dir) -> std::vector<Templat
 		     std::filesystem::directory_iterator(entry.path() / "templates")) {
 			if (file.path().extension() == ".mustache") {
 				Template t;
-				YAML::Node config = YAML::LoadFile(entry.path() / "templates" / "config.yaml");
+				YAML::Node config =
+					YAML::LoadFile(entry.path() / "templates" / "config.yaml");
 				t.name = entry.path().stem().string();
-				for (YAML::const_iterator it = config.begin(); it != config.end(); ++it) {
+				for (YAML::const_iterator it = config.begin(); it != config.end();
+				     ++it) {
 					YAML::Node node = config[it->first.as<std::string>()];
-					if (it->first.as<std::string>() == file.path().stem().string()) {
-						if (node["extension"].Type() != YAML::NodeType::Null)
-							t.extension = node["extension"].as<std::string>();
+					if (it->first.as<std::string>() ==
+					    file.path().stem().string()) {
+						if (node["extension"].Type() !=
+						    YAML::NodeType::Null)
+							t.extension =
+								node["extension"].as<std::string>();
 
 						t.output = node["output"].as<std::string>();
 					}
 				}
 
-				std::ifstream templet(file.path().string(), std::ios::binary | std::ios::ate);
+				std::ifstream templet(file.path().string(),
+				                      std::ios::binary | std::ios::ate);
 				if (templet.good()) {
 					templet.seekg(0, std::ios::end);
 					t.data.resize(templet.tellg());
@@ -498,7 +504,8 @@ main(int argc, char *argv[]) -> int
 		std::vector<std::string> opt_templates;
 		std::filesystem::path opt_output = "output";
 
-		while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+		// NOLINTNEXTLINE (concurrency-mt-unsafe)
+		while ((opt = getopt(argc, argv, "c:s:t:o:")) != EOF) {
 			switch (opt) {
 			case 'c':
 				opt_cache_dir = optarg;
