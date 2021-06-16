@@ -620,7 +620,7 @@ main(int argc, char *argv[]) -> int
 		}
 		list(opt_cache_dir, opt_show_template, opt_show_scheme, opt_raw);
 	} else if (std::strcmp(args[optind], "version") == 0) {
-		std::cout << "cbase16-0.4.0" << std::endl;
+		std::cout << "cbase16-0.5.0" << std::endl;
 	} else if (std::strcmp(args[optind], "help") == 0) {
 		std::cout << "usage: cbase16 [command] [options]\n\n"
 			     "command:\n"
