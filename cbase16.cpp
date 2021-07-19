@@ -124,7 +124,7 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
 		if (!std::filesystem::is_regular_file(entry.path() / "templates" / "config.yaml")) {
-			std::cout << "error: config get config file for " << entry.path() << std::endl;
+			std::cout << "error: cannot get config file for " << entry.path() << std::endl;
 			continue;
 		}
 		for (const std::filesystem::directory_entry &file :
