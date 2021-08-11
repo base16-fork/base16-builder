@@ -501,7 +501,7 @@ main(int argc, char *argv[]) -> int
 		std::filesystem::create_directory(opt_cache_dir);
 
 	if (std::strcmp(args[optind], "update") == 0) {
-		while ((opt = getopt(argc, argv, "c")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+		while ((opt = getopt(argc, argv, "c:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 			switch (opt) {
 			case 'c':
 				if (std::filesystem::is_directory(optarg)) {
