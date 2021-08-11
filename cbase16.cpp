@@ -44,9 +44,8 @@ auto get_schemes(const std::filesystem::path &) -> std::vector<Scheme>;
 auto hex_to_rgb(const std::string &) -> std::vector<int>;
 auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
-void build(const std::filesystem::path &, const std::filesystem::path &,
-           const std::filesystem::path &, const std::vector<std::string> &,
-           const std::vector<std::string> &, const std::filesystem::path &);
+void build(const std::filesystem::path &, const std::vector<std::string> &,
+	   const std::vector<std::string> &, const std::filesystem::path &);
 auto get_terminal_size() -> std::vector<unsigned short>;
 void list_templates(const std::filesystem::path &, const bool &);
 void list_schemes(const std::filesystem::path &, const bool &);
@@ -70,7 +69,7 @@ clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const 
 		for (int i = 0; i < token_key.size(); ++i) {
 			git_repository *repo = nullptr;
 			git_clone(&repo, token_value[i].c_str(),
-			          (opt_cache_dir / dir / token_key[i]).c_str(), nullptr);
+				  (opt_cache_dir / dir / token_key[i]).c_str(), nullptr);
 			git_repository_free(repo);
 		}
 
@@ -124,7 +123,8 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
 		if (!std::filesystem::is_regular_file(entry.path() / "templates" / "config.yaml")) {
-			std::cout << "error: cannot get config file for " << entry.path() << std::endl;
+			std::cout << "error: cannot get config file for " << entry.path()
+				  << std::endl;
 			continue;
 		}
 		for (const std::filesystem::directory_entry &file :
@@ -150,7 +150,7 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 				}
 
 				std::ifstream templet(file.path().string(),
-				                      std::ios::binary | std::ios::ate);
+						      std::ios::binary | std::ios::ate);
 				if (templet.good()) {
 					templet.seekg(0, std::ios::end);
 					t.data.resize(templet.tellg());
@@ -258,22 +258,14 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 }
 
 void
-build(const std::filesystem::path &opt_cache_dir, const std::filesystem::path &opt_template_dir,
-      const std::filesystem::path &opt_scheme_dir, const std::vector<std::string> &opt_templates,
+build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string> &opt_templates,
       const std::vector<std::string> &opt_schemes, const std::filesystem::path &opt_output)
 {
 	std::vector<Template> templates;
 	std::vector<Scheme> schemes;
 
-	if (!opt_scheme_dir.empty())
-		schemes = get_schemes(opt_scheme_dir);
-	else
-		schemes = get_schemes(opt_cache_dir / "schemes");
-
-	if (!opt_template_dir.empty())
-		templates = get_templates(opt_template_dir);
-	else
-		templates = get_templates(opt_cache_dir / "templates");
+	schemes = get_schemes(opt_cache_dir / "schemes");
+	templates = get_templates(opt_cache_dir / "templates");
 
 #pragma omp parallel for default(none) \
 	shared(opt_templates, opt_schemes, templates, schemes, opt_output)
@@ -287,13 +279,13 @@ build(const std::filesystem::path &opt_cache_dir, const std::filesystem::path &o
 		for (Template t : templates) {
 			if (!opt_templates.empty() &&
 			    std::find(opt_templates.begin(), opt_templates.end(), t.name) ==
-			            opt_templates.end())
+				    opt_templates.end())
 				continue;
 
 			for (const auto &[base, color] : s.colors) {
 				std::vector<std::string> hex = { color.substr(0, 2),
-					                         color.substr(2, 2),
-					                         color.substr(4, 2) };
+								 color.substr(2, 2),
+								 color.substr(4, 2) };
 				std::vector<int> rgb = hex_to_rgb(color);
 				std::vector<long double> dec = rgb_to_dec(rgb);
 
@@ -302,22 +294,22 @@ build(const std::filesystem::path &opt_cache_dir, const std::filesystem::path &o
 				replace_all(t.data, "{{" + base + "-hex-b" + "}}", hex[2]);
 
 				replace_all(t.data, "{{" + base + "-rgb-r" + "}}",
-				            std::to_string(rgb[0]));
+					    std::to_string(rgb[0]));
 				replace_all(t.data, "{{" + base + "-rgb-g" + "}}",
-				            std::to_string(rgb[1]));
+					    std::to_string(rgb[1]));
 				replace_all(t.data, "{{" + base + "-rgb-b" + "}}",
-				            std::to_string(rgb[2]));
+					    std::to_string(rgb[2]));
 
 				replace_all(t.data, "{{" + base + "-dec-r" + "}}",
-				            std::to_string(dec[0]));
+					    std::to_string(dec[0]));
 				replace_all(t.data, "{{" + base + "-dec-g" + "}}",
-				            std::to_string(dec[1]));
+					    std::to_string(dec[1]));
 				replace_all(t.data, "{{" + base + "-dec-b" + "}}",
-				            std::to_string(dec[2]));
+					    std::to_string(dec[2]));
 
 				replace_all(t.data, "{{" + base + "-hex" + "}}", color);
 				replace_all(t.data, "{{" + base + "-hex-bgr" + "}}",
-				            hex[0] + hex[1] + hex[2]);
+					    hex[0] + hex[1] + hex[2]);
 			}
 
 			replace_all(t.data, "{{scheme-slug}}", s.slug);
@@ -526,35 +518,14 @@ main(int argc, char *argv[]) -> int
 	} else if (std::strcmp(args[optind], "build") == 0) {
 		std::vector<std::string> opt_templates;
 		std::vector<std::string> opt_schemes;
-
-		std::filesystem::path opt_template_dir;
-		std::filesystem::path opt_scheme_dir;
 		std::filesystem::path opt_output = "output";
 
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
-		while ((opt = getopt(argc, argv, "c:T:S:t:s:o:")) != EOF) {
+		while ((opt = getopt(argc, argv, "c:t:s:o:")) != EOF) {
 			switch (opt) {
 			case 'c':
 				if (std::filesystem::is_directory(optarg)) {
 					opt_cache_dir = optarg;
-				} else {
-					std::cout << "error: directory not found: " << optarg
-						  << std::endl;
-					return 1;
-				}
-				break;
-			case 'T':
-				if (std::filesystem::is_directory(optarg)) {
-					opt_template_dir = optarg;
-				} else {
-					std::cout << "error: directory not found: " << optarg
-						  << std::endl;
-					return 1;
-				}
-				break;
-			case 'S':
-				if (std::filesystem::is_directory(optarg)) {
-					opt_scheme_dir = optarg;
 				} else {
 					std::cout << "error: directory not found: " << optarg
 						  << std::endl;
@@ -588,8 +559,7 @@ main(int argc, char *argv[]) -> int
 				break;
 			}
 		}
-		build(opt_cache_dir, opt_template_dir, opt_scheme_dir, opt_templates, opt_schemes,
-		      opt_output);
+		build(opt_cache_dir, opt_templates, opt_schemes, opt_output);
 	} else if (std::strcmp(args[optind], "list") == 0) {
 		bool opt_show_template = true;
 		bool opt_show_scheme = true;
@@ -625,14 +595,12 @@ main(int argc, char *argv[]) -> int
 			     "   -c -- specify cache directory\n\n"
 			     "build options:\n"
 			     "   -c -- specify cache directory\n"
-			     "   -T -- specify template directory\n"
-			     "   -S -- specify scheme directory\n"
-			     "   -t -- only build specified templates\n"
 			     "   -s -- only build specified schemes\n"
+			     "   -t -- only build specified templates\n"
 			     "   -o -- specify output directory\n\n"
 			     "list options:\n"
-			     "   -t -- only show templates\n"
 			     "   -s -- only show schemes\n"
+			     "   -t -- only show templates\n"
 			     "   -r -- list items in single column"
 			  << std::endl;
 	} else {
