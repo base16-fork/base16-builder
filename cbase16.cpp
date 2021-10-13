@@ -50,7 +50,7 @@ auto hex_to_rgb(const std::string &) -> std::vector<int>;
 auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, const std::vector<std::string> &,
-	   const std::vector<std::string> &, const std::filesystem::path &);
+           const std::vector<std::string> &, const std::filesystem::path &);
 auto get_terminal_size() -> Terminal;
 void list_templates(const std::filesystem::path &, const bool &);
 void list_schemes(const std::filesystem::path &, const bool &);
@@ -74,7 +74,7 @@ clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const 
 		for (int i = 0; i < token_key.size(); ++i) {
 			git_repository *repo = nullptr;
 			git_clone(&repo, token_value[i].c_str(),
-				  (opt_cache_dir / dir / token_key[i]).c_str(), nullptr);
+			          (opt_cache_dir / dir / token_key[i]).c_str(), nullptr);
 			git_repository_free(repo);
 		}
 
@@ -155,7 +155,7 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 				}
 
 				std::ifstream templet(file.path().string(),
-						      std::ios::binary | std::ios::ate);
+				                      std::ios::binary | std::ios::ate);
 				if (templet.good()) {
 					templet.seekg(0, std::ios::end);
 					t.data.resize(templet.tellg());
@@ -284,13 +284,13 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 		for (Template t : templates) {
 			if (!opt_templates.empty() &&
 			    std::find(opt_templates.begin(), opt_templates.end(), t.name) ==
-				    opt_templates.end())
+			            opt_templates.end())
 				continue;
 
 			for (const auto &[base, color] : s.colors) {
 				std::vector<std::string> hex = { color.substr(0, 2),
-								 color.substr(2, 2),
-								 color.substr(4, 2) };
+					                         color.substr(2, 2),
+					                         color.substr(4, 2) };
 				std::vector<int> rgb = hex_to_rgb(color);
 				std::vector<long double> dec = rgb_to_dec(rgb);
 
@@ -299,22 +299,22 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 				replace_all(t.data, "{{" + base + "-hex-b" + "}}", hex[2]);
 
 				replace_all(t.data, "{{" + base + "-rgb-r" + "}}",
-					    std::to_string(rgb[0]));
+				            std::to_string(rgb[0]));
 				replace_all(t.data, "{{" + base + "-rgb-g" + "}}",
-					    std::to_string(rgb[1]));
+				            std::to_string(rgb[1]));
 				replace_all(t.data, "{{" + base + "-rgb-b" + "}}",
-					    std::to_string(rgb[2]));
+				            std::to_string(rgb[2]));
 
 				replace_all(t.data, "{{" + base + "-dec-r" + "}}",
-					    std::to_string(dec[0]));
+				            std::to_string(dec[0]));
 				replace_all(t.data, "{{" + base + "-dec-g" + "}}",
-					    std::to_string(dec[1]));
+				            std::to_string(dec[1]));
 				replace_all(t.data, "{{" + base + "-dec-b" + "}}",
-					    std::to_string(dec[2]));
+				            std::to_string(dec[2]));
 
 				replace_all(t.data, "{{" + base + "-hex" + "}}", color);
 				replace_all(t.data, "{{" + base + "-hex-bgr" + "}}",
-					    hex[0] + hex[1] + hex[2]);
+				            hex[0] + hex[1] + hex[2]);
 			}
 
 			replace_all(t.data, "{{scheme-slug}}", s.slug);
