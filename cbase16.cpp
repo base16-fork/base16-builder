@@ -33,6 +33,11 @@ struct Scheme {
 	std::map<std::string, std::string> colors;
 };
 
+struct Terminal {
+	int width;
+	int height;
+};
+
 constexpr int HEX_MIN_LENGTH = 6;
 constexpr int RGB_MIN_SIZE = 3;
 constexpr int RGB_DEC = 255;
@@ -46,7 +51,7 @@ auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, const std::vector<std::string> &,
 	   const std::vector<std::string> &, const std::filesystem::path &);
-auto get_terminal_size() -> std::vector<unsigned short>;
+auto get_terminal_size() -> Terminal;
 void list_templates(const std::filesystem::path &, const bool &);
 void list_schemes(const std::filesystem::path &, const bool &);
 void list(const std::filesystem::path &, const bool &, const bool &, const bool &);
@@ -328,11 +333,10 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 }
 
 auto
-get_terminal_size() -> std::vector<unsigned short>
+get_terminal_size() -> Terminal
 {
 	unsigned short width = 0;
 	unsigned short height = 0;
-	std::vector<unsigned short> size(2);
 
 #if defined(__linux__)
 	struct winsize w {
@@ -348,8 +352,10 @@ get_terminal_size() -> std::vector<unsigned short>
 	height = (int)(csbi.srWindow.Bottom - csbi.srWindow.Top + 1);
 #endif
 
-	size[0] = width;
-	size[1] = height;
+	Terminal size = {
+		width,
+		height,
+	};
 
 	return size;
 }
@@ -365,7 +371,7 @@ list_templates(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 		return;
 	}
 
-	std::vector<unsigned short> terminal_size = get_terminal_size();
+	Terminal terminal_size = get_terminal_size();
 
 	int index = 0;
 	unsigned short length = 0;
@@ -376,7 +382,7 @@ list_templates(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 			length = t.name.length();
 	}
 
-	unsigned short num_of_column = terminal_size[0] / (length + 1);
+	unsigned short num_of_column = terminal_size.width / (length + 1);
 	unsigned short num_of_row = num_of_element / num_of_column;
 	unsigned short remainder = num_of_element % num_of_column;
 	unsigned short padding = length + 1;
@@ -413,7 +419,7 @@ list_schemes(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 		return;
 	}
 
-	std::vector<unsigned short> terminal_size = get_terminal_size();
+	Terminal terminal_size = get_terminal_size();
 
 	int index = 0;
 	unsigned short length = 0;
@@ -424,7 +430,7 @@ list_schemes(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 			length = s.slug.length();
 	}
 
-	unsigned short num_of_column = terminal_size[0] / (length + 1);
+	unsigned short num_of_column = terminal_size.width / (length + 1);
 	unsigned short num_of_row = num_of_element / num_of_column;
 	unsigned short remainder = num_of_element % num_of_column;
 	unsigned short padding = length + 1;
