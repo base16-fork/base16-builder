@@ -77,7 +77,6 @@ clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const 
 			          (opt_cache_dir / dir / token_key[i]).c_str(), nullptr);
 			git_repository_free(repo);
 		}
-
 	} else {
 		std::cout << "error: cannot read " + source << std::endl;
 		_exit(1);
@@ -140,6 +139,7 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 				YAML::Node config =
 					YAML::LoadFile(entry.path() / "templates" / "config.yaml");
 				t.name = entry.path().stem().string();
+
 				for (YAML::const_iterator it = config.begin(); it != config.end();
 				     ++it) {
 					YAML::Node node = config[it->first.as<std::string>()];
@@ -156,6 +156,7 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 
 				std::ifstream templet(file.path().string(),
 				                      std::ios::binary | std::ios::ate);
+
 				if (templet.good()) {
 					templet.seekg(0, std::ios::end);
 					t.data.resize(templet.tellg());
@@ -192,6 +193,7 @@ get_schemes(const std::filesystem::path &directory) -> std::vector<Scheme>
 
 				Scheme s;
 				s.slug = file.path().stem().string();
+
 				for (YAML::const_iterator it = node.begin(); it != node.end();
 				     ++it) {
 					auto key = it->first.as<std::string>();
@@ -256,6 +258,7 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 		return;
 
 	size_t start_pos = 0;
+
 	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
 		str.replace(start_pos, from.length(), to);
 		start_pos += to.length();
@@ -324,6 +327,7 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 			std::filesystem::path output_dir = opt_output / t.name / t.output;
 			std::filesystem::create_directories(output_dir);
 			std::ofstream output_file(output_dir / ("base16-" + s.slug + t.extension));
+
 			if (output_file.good()) {
 				output_file << t.data;
 				output_file.close();
@@ -438,6 +442,7 @@ list_schemes(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 	for (int row = 0; row < num_of_row; ++row) {
 		if (row != 0)
 			std::cout << std::endl;
+
 		for (int column = 0; column < num_of_column; ++column) {
 			std::cout << std::left << std::setw(padding) << schemes[index].slug
 				  << std::setw(padding);
@@ -565,6 +570,7 @@ main(int argc, char *argv[]) -> int
 				break;
 			}
 		}
+
 		build(opt_cache_dir, opt_templates, opt_schemes, opt_output);
 	} else if (std::strcmp(args[optind], "list") == 0) {
 		bool opt_show_template = true;
@@ -586,6 +592,7 @@ main(int argc, char *argv[]) -> int
 				break;
 			}
 		}
+
 		list(opt_cache_dir, opt_show_template, opt_show_scheme, opt_raw);
 	} else if (std::strcmp(args[optind], "version") == 0) {
 		std::cout << "cbase16-0.5.2" << std::endl;
