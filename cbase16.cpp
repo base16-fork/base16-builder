@@ -44,6 +44,8 @@ constexpr int RGB_DEC = 255;
 
 void clone(const std::filesystem::path &, const std::string &, const std::string &);
 void update(const std::filesystem::path &);
+auto get_template(const std::filesystem::path &) -> Template;
+auto get_scheme(const std::filesystem::path &) -> Scheme;
 auto get_templates(const std::filesystem::path &) -> std::vector<Template>;
 auto get_schemes(const std::filesystem::path &) -> std::vector<Scheme>;
 auto hex_to_rgb(const std::string &) -> std::vector<int>;
@@ -114,15 +116,53 @@ update(const std::filesystem::path &opt_cache_dir)
 }
 
 auto
+get_template(const std::filesystem::path &directory) -> Template
+{
+	Template templet;
+
+	if (!std::filesystem::is_directory(directory)) {
+		std::cout << "warning: template directory is either empty or not found"
+			  << std::endl;
+		return templet;
+	}
+
+	for (const std::filesystem::directory_entry &file :
+	     std::filesystem::directory_iterator(directory)) {
+		if (file.path().extension() == ".mustache") {
+			YAML::Node config = YAML::LoadFile(directory / "config.yaml");
+			templet.name = directory.parent_path().stem().string();
+
+			for (YAML::const_iterator it = config.begin(); it != config.end(); ++it) {
+				YAML::Node node = config[it->first.as<std::string>()];
+				if (it->first.as<std::string>() == file.path().stem().string()) {
+					if (node["extension"].Type() != YAML::NodeType::Null)
+						templet.extension =
+							node["extension"].as<std::string>();
+
+					templet.output = node["output"].as<std::string>();
+				}
+			}
+
+			std::ifstream buffer(file.path().string(),
+			                     std::ios::binary | std::ios::ate);
+
+			if (buffer.good()) {
+				buffer.seekg(0, std::ios::end);
+				templet.data.resize(buffer.tellg());
+				buffer.seekg(0, std::ios::beg);
+				buffer.read(&templet.data[0], (long)templet.data.size());
+				buffer.close();
+			}
+		}
+	}
+
+	return templet;
+}
+
+auto
 get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 {
 	std::vector<Template> templates;
-
-	if (!std::filesystem::is_directory(directory)) {
-		std::cout << "warning: cache template directory is either empty or not found"
-			  << std::endl;
-		return templates;
-	}
 
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
@@ -131,46 +171,44 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 				  << std::endl;
 			continue;
 		}
-		for (const std::filesystem::directory_entry &file :
-		     std::filesystem::directory_iterator(entry.path() / "templates")) {
-			if (file.path().extension() == ".mustache") {
-				Template t;
+		templates.emplace_back(get_template(entry.path() / "templates"));
+	}
 
-				YAML::Node config =
-					YAML::LoadFile(entry.path() / "templates" / "config.yaml");
-				t.name = entry.path().stem().string();
+	return templates;
+}
 
-				for (YAML::const_iterator it = config.begin(); it != config.end();
-				     ++it) {
-					YAML::Node node = config[it->first.as<std::string>()];
-					if (it->first.as<std::string>() ==
-					    file.path().stem().string()) {
-						if (node["extension"].Type() !=
-						    YAML::NodeType::Null)
-							t.extension =
-								node["extension"].as<std::string>();
+auto
+get_scheme(const std::filesystem::path &directory) -> Scheme
+{
+	Scheme s;
 
-						t.output = node["output"].as<std::string>();
-					}
-				}
+	if (!std::filesystem::is_directory(directory)) {
+		std::cout << "warning: directory is either empty or not found" << std::endl;
+		return s;
+	}
 
-				std::ifstream templet(file.path().string(),
-				                      std::ios::binary | std::ios::ate);
+	for (const std::filesystem::directory_entry &file :
+	     std::filesystem::directory_iterator(directory)) {
+		if (file.is_regular_file() && file.path().extension() == ".yaml") {
+			YAML::Node node = YAML::LoadFile(file.path().string());
 
-				if (templet.good()) {
-					templet.seekg(0, std::ios::end);
-					t.data.resize(templet.tellg());
-					templet.seekg(0, std::ios::beg);
-					templet.read(&t.data[0], (long)t.data.size());
-					templet.close();
-				}
+			s.slug = file.path().stem().string();
 
-				templates.emplace_back(t);
+			for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
+				auto key = it->first.as<std::string>();
+				auto value = it->second.as<std::string>();
+
+				if (key == "scheme")
+					s.name = value;
+				else if (key == "author")
+					s.author = value;
+				else
+					s.colors.insert({ key, value });
 			}
 		}
 	}
 
-	return templates;
+	return s;
 }
 
 auto
@@ -178,38 +216,9 @@ get_schemes(const std::filesystem::path &directory) -> std::vector<Scheme>
 {
 	std::vector<Scheme> schemes;
 
-	if (!std::filesystem::is_directory(directory)) {
-		std::cout << "warning: cache scheme directory is either empty or not found"
-			  << std::endl;
-		return schemes;
-	}
-
-	for (const std::filesystem::directory_entry &dir :
+	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
-		for (const std::filesystem::directory_entry &file :
-		     std::filesystem::directory_iterator(dir)) {
-			if (file.is_regular_file() && file.path().extension() == ".yaml") {
-				YAML::Node node = YAML::LoadFile(file.path().string());
-
-				Scheme s;
-				s.slug = file.path().stem().string();
-
-				for (YAML::const_iterator it = node.begin(); it != node.end();
-				     ++it) {
-					auto key = it->first.as<std::string>();
-					auto value = it->second.as<std::string>();
-
-					if (key == "scheme")
-						s.name = value;
-					else if (key == "author")
-						s.author = value;
-					else
-						s.colors.insert({ key, value });
-				}
-
-				schemes.emplace_back(s);
-			}
-		}
+		schemes.emplace_back(get_scheme(entry));
 	}
 
 	return schemes;
