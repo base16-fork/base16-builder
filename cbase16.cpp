@@ -52,7 +52,8 @@ auto hex_to_rgb(const std::string &) -> std::vector<int>;
 auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, const std::vector<std::string> &,
-           const std::vector<std::string> &, const std::filesystem::path &);
+           const std::vector<std::string> &, const std::filesystem::path &,
+           bool);
 auto get_terminal_size() -> Terminal;
 void list_templates(const std::filesystem::path &, const bool &);
 void list_schemes(const std::filesystem::path &, const bool &);
@@ -289,13 +290,42 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 
 void
 build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string> &opt_templates,
-      const std::vector<std::string> &opt_schemes, const std::filesystem::path &opt_output)
+      const std::vector<std::string> &opt_schemes, const std::filesystem::path &opt_output, bool make)
 {
 	std::vector<Template> templates;
 	std::vector<Scheme> schemes;
 
-	schemes = parse_scheme_dir(opt_cache_dir / "schemes");
-	templates = parse_template_dir(opt_cache_dir / "templates");
+	if (make) {
+		bool good = false;
+
+		for (const std::filesystem::directory_entry &file :
+		     std::filesystem::directory_iterator(std::filesystem::current_path())) {
+			if (file.is_regular_file() && file.path().extension() == ".yaml") {
+				good = true;
+				break;
+			}
+		}
+
+		if (good) {
+			std::vector<Scheme> parse_scheme = get_scheme(std::filesystem::current_path());
+			schemes.insert(schemes.begin(), parse_scheme.begin(), parse_scheme.end());
+		} else {
+			schemes = parse_scheme_dir(opt_cache_dir / "schemes");
+		}
+	} else {
+		schemes = parse_scheme_dir(opt_cache_dir / "schemes");
+	}
+
+	if (make) {
+		if (std::filesystem::is_directory(std::filesystem::current_path() / "templates")) {
+			std::vector<Template> parse_templates = get_template(std::filesystem::current_path() / "templates");
+			templates.insert(templates.begin(), parse_templates.begin(), parse_templates.end());
+		} else {
+			templates = parse_template_dir(opt_cache_dir / "templates");
+		}
+	} else {
+		templates = parse_template_dir(opt_cache_dir / "templates");
+	}
 
 #pragma omp parallel for default(none) \
 	shared(opt_templates, opt_schemes, templates, schemes, opt_output)
@@ -593,7 +623,53 @@ main(int argc, char *argv[]) -> int
 			}
 		}
 
-		build(opt_cache_dir, opt_templates, opt_schemes, opt_output);
+		build(opt_cache_dir, opt_templates, opt_schemes, opt_output, false);
+	} else if (std::strcmp(args[optind], "make") == 0) {
+		std::vector<std::string> opt_templates;
+		std::vector<std::string> opt_schemes;
+		std::filesystem::path opt_output = "output";
+
+		// NOLINTNEXTLINE (concurrency-mt-unsafe)
+		while ((opt = getopt(argc, argv, "c:t:s:o:")) != EOF) {
+			switch (opt) {
+			case 'c':
+				if (std::filesystem::is_directory(optarg)) {
+					opt_cache_dir = optarg;
+				} else {
+					std::cout << "error: directory not found: " << optarg
+						<< std::endl;
+					return 1;
+				}
+				break;
+			case 't':
+				index = optind - 1;
+				while (index < argc) {
+					std::string next = args[index];
+					index++;
+					if (next[0] != '-')
+						opt_templates.emplace_back(next);
+					else
+						break;
+				}
+				break;
+			case 's':
+				index = optind - 1;
+				while (index < argc) {
+					std::string next = args[index];
+					index++;
+					if (next[0] != '-')
+						opt_schemes.emplace_back(next);
+					else
+						break;
+				}
+				break;
+			case 'o':
+				opt_output = optarg;
+				break;
+			}
+		}
+
+		build(opt_cache_dir, opt_templates, opt_schemes, opt_output, true);
 	} else if (std::strcmp(args[optind], "list") == 0) {
 		bool opt_show_template = true;
 		bool opt_show_scheme = true;
@@ -623,6 +699,7 @@ main(int argc, char *argv[]) -> int
 			     "command:\n"
 			     "   update  -- fetch all necessary sources for building\n"
 			     "   build   -- generate colorscheme templates\n"
+			     "   make    -- build current directory\n"
 			     "   list    -- display available schemes and templates\n"
 			     "   version -- display version\n"
 			     "   help    -- display usage message\n\n"

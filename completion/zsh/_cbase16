@@ -24,8 +24,15 @@ _cbase16_update() {
 _cbase16_build() {
 	_arguments -C \
 		'-c[set cache directory]:directory:_directories' \
-		'-S[set scheme directory]:directory:_directories' \
-		'-T[set template directory]:directory:_directories' \
+		'-s[only build specified schemes]:scheme:_list_schemes' \
+		'-t[only build specified templates]:template:_list_templates' \
+		'-o[set output directory]:directory:_directories'
+}
+
+(( $+function[_cbase16_build] )) ||
+_cbase16_make() {
+	_arguments -C \
+		'-c[set cache directory]:directory:_directories' \
 		'-s[only build specified schemes]:scheme:_list_schemes' \
 		'-t[only build specified templates]:template:_list_templates' \
 		'-o[set output directory]:directory:_directories'
@@ -45,6 +52,7 @@ _cbase16_commmands() {
 	_cbase16_commands=(
 		'update:fetch all necessary sources for building'
 		'build:generate colorscheme templates'
+		'make:build current directory'
 		'list:display available schemes and templates'
 		'version:display version'
 		'help:display usage message'
