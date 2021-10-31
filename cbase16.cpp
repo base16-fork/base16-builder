@@ -44,10 +44,10 @@ constexpr int RGB_DEC = 255;
 
 void clone(const std::filesystem::path &, const std::string &, const std::string &);
 void update(const std::filesystem::path &);
-auto get_template(const std::filesystem::path &) -> Template;
-auto get_scheme(const std::filesystem::path &) -> Scheme;
-auto get_templates(const std::filesystem::path &) -> std::vector<Template>;
-auto get_schemes(const std::filesystem::path &) -> std::vector<Scheme>;
+auto get_template(const std::filesystem::path &) -> std::vector<Template>;
+auto get_scheme(const std::filesystem::path &) -> std::vector<Scheme>;
+auto parse_template_dir(const std::filesystem::path &) -> std::vector<Template>;
+auto parse_scheme_dir(const std::filesystem::path &) -> std::vector<Scheme>;
 auto hex_to_rgb(const std::string &) -> std::vector<int>;
 auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
@@ -116,19 +116,21 @@ update(const std::filesystem::path &opt_cache_dir)
 }
 
 auto
-get_template(const std::filesystem::path &directory) -> Template
+get_template(const std::filesystem::path &directory) -> std::vector<Template>
 {
-	Template templet;
+	std::vector<Template> templates;
 
 	if (!std::filesystem::is_directory(directory)) {
 		std::cout << "warning: template directory is either empty or not found"
 			  << std::endl;
-		return templet;
+		return templates;
 	}
 
 	for (const std::filesystem::directory_entry &file :
 	     std::filesystem::directory_iterator(directory)) {
 		if (file.path().extension() == ".mustache") {
+			Template templet;
+
 			YAML::Node config = YAML::LoadFile(directory / "config.yaml");
 			templet.name = directory.parent_path().stem().string();
 
@@ -153,14 +155,16 @@ get_template(const std::filesystem::path &directory) -> Template
 				buffer.read(&templet.data[0], (long)templet.data.size());
 				buffer.close();
 			}
+
+			templates.emplace_back(templet);
 		}
 	}
 
-	return templet;
+	return templates;
 }
 
 auto
-get_templates(const std::filesystem::path &directory) -> std::vector<Template>
+parse_template_dir(const std::filesystem::path &directory) -> std::vector<Template>
 {
 	std::vector<Template> templates;
 
@@ -171,54 +175,63 @@ get_templates(const std::filesystem::path &directory) -> std::vector<Template>
 				  << std::endl;
 			continue;
 		}
-		templates.emplace_back(get_template(entry.path() / "templates"));
+
+		std::vector<Template> parse_templates = get_template(entry.path() / "templates");
+
+		templates.insert(templates.begin(), parse_templates.begin(), parse_templates.end());
 	}
 
 	return templates;
 }
 
 auto
-get_scheme(const std::filesystem::path &directory) -> Scheme
+get_scheme(const std::filesystem::path &directory) -> std::vector<Scheme>
 {
-	Scheme s;
+	std::vector<Scheme> schemes;
 
 	if (!std::filesystem::is_directory(directory)) {
 		std::cout << "warning: directory is either empty or not found" << std::endl;
-		return s;
+		return schemes;
 	}
 
 	for (const std::filesystem::directory_entry &file :
 	     std::filesystem::directory_iterator(directory)) {
 		if (file.is_regular_file() && file.path().extension() == ".yaml") {
+			Scheme scheme;
+
 			YAML::Node node = YAML::LoadFile(file.path().string());
 
-			s.slug = file.path().stem().string();
+			scheme.slug = file.path().stem().string();
 
 			for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
 				auto key = it->first.as<std::string>();
 				auto value = it->second.as<std::string>();
 
 				if (key == "scheme")
-					s.name = value;
+					scheme.name = value;
 				else if (key == "author")
-					s.author = value;
+					scheme.author = value;
 				else
-					s.colors.insert({ key, value });
+					scheme.colors.insert({ key, value });
 			}
+
+			schemes.emplace_back(scheme);
 		}
 	}
 
-	return s;
+	return schemes;
 }
 
 auto
-get_schemes(const std::filesystem::path &directory) -> std::vector<Scheme>
+parse_scheme_dir(const std::filesystem::path &directory) -> std::vector<Scheme>
 {
 	std::vector<Scheme> schemes;
 
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
-		schemes.emplace_back(get_scheme(entry));
+		std::vector<Scheme> parse_schemes = get_scheme(entry);
+
+		schemes.insert(schemes.end(), parse_schemes.begin(), parse_schemes.end());
 	}
 
 	return schemes;
@@ -281,8 +294,8 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 	std::vector<Template> templates;
 	std::vector<Scheme> schemes;
 
-	schemes = get_schemes(opt_cache_dir / "schemes");
-	templates = get_templates(opt_cache_dir / "templates");
+	schemes = parse_scheme_dir(opt_cache_dir / "schemes");
+	templates = parse_template_dir(opt_cache_dir / "templates");
 
 #pragma omp parallel for default(none) \
 	shared(opt_templates, opt_schemes, templates, schemes, opt_output)
@@ -376,7 +389,7 @@ get_terminal_size() -> Terminal
 void
 list_templates(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 {
-	std::vector<Template> templates = get_templates(opt_cache_dir / "templates");
+	std::vector<Template> templates = parse_template_dir(opt_cache_dir / "templates");
 
 	if (opt_raw) {
 		for (const Template &t : templates)
@@ -424,7 +437,7 @@ list_templates(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 void
 list_schemes(const std::filesystem::path &opt_cache_dir, const bool &opt_raw)
 {
-	std::vector<Scheme> schemes = get_schemes(opt_cache_dir / "schemes");
+	std::vector<Scheme> schemes = parse_scheme_dir(opt_cache_dir / "schemes");
 
 	if (opt_raw) {
 		for (const Scheme &s : schemes)
