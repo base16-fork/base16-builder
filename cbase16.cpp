@@ -120,7 +120,8 @@ get_template(const std::filesystem::path &directory) -> std::vector<Template>
 	std::vector<Template> templates;
 
 	if (!std::filesystem::is_directory(directory)) {
-		std::cout << "warning: template directory is either empty or not found"
+		std::cout << "warning: " << directory
+			  << " template directory is either empty or not found"
 			  << std::endl;
 		return templates;
 	}
@@ -189,7 +190,8 @@ get_scheme(const std::filesystem::path &directory) -> std::vector<Scheme>
 	std::vector<Scheme> schemes;
 
 	if (!std::filesystem::is_directory(directory)) {
-		std::cout << "warning: directory is either empty or not found" << std::endl;
+		std::cout << "warning: " << directory
+			  << " scheme directory is either empty or not found" << std::endl;
 		return schemes;
 	}
 
