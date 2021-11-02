@@ -45,7 +45,7 @@ structured as follows:
 - `/templates/[name]/templates/config.yaml` -- Template configuration file
 
 After running `build`, the generated colorscheme templates will be in the
-`output` directory by default unless specified otherwise under the current
+`base16-themes` directory by default unless specified otherwise under the current
 running directory.
 
 ## Dependencies

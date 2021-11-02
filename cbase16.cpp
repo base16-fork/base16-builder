@@ -579,7 +579,7 @@ main(int argc, char *argv[]) -> int
 	} else if (std::strcmp(args[optind], "build") == 0) {
 		std::vector<std::string> opt_templates;
 		std::vector<std::string> opt_schemes;
-		std::filesystem::path opt_output = "output";
+		std::filesystem::path opt_output = "base16-themes";
 
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
 		while ((opt = getopt(argc, argv, "c:t:s:o:")) != EOF) {
@@ -625,7 +625,7 @@ main(int argc, char *argv[]) -> int
 	} else if (std::strcmp(args[optind], "make") == 0) {
 		std::vector<std::string> opt_templates;
 		std::vector<std::string> opt_schemes;
-		std::filesystem::path opt_output = "output";
+		std::filesystem::path opt_output = "base16-themes";
 
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
 		while ((opt = getopt(argc, argv, "c:t:s:o:")) != EOF) {
