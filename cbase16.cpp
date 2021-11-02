@@ -96,10 +96,10 @@ update(const std::filesystem::path &opt_cache_dir)
 		source << YAML::BeginMap;
 		source << YAML::Key << "schemes";
 		source << YAML::Value
-		       << "https://github.com/chriskempson/base16-schemes-source.git";
+		       << "https://github.com/base16-fork/base16-schemes-recipe.git";
 		source << YAML::Key << "templates";
 		source << YAML::Value
-		       << "https://github.com/chriskempson/base16-templates-source.git";
+		       << "https://github.com/base16-fork/base16-templates-recipe.git";
 		source << YAML::EndMap;
 
 		file << source.c_str();
@@ -110,9 +110,7 @@ update(const std::filesystem::path &opt_cache_dir)
 	}
 
 	git_libgit2_init();
-	clone(opt_cache_dir, "sources", opt_cache_dir / "sources.yaml");
-	clone(opt_cache_dir, "schemes", opt_cache_dir / "sources" / "schemes" / "list.yaml");
-	clone(opt_cache_dir, "templates", opt_cache_dir / "sources" / "templates" / "list.yaml");
+	clone(opt_cache_dir, "", opt_cache_dir / "sources.yaml");
 	git_libgit2_shutdown();
 }
 
