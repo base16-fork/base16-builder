@@ -52,7 +52,8 @@ auto hex_to_rgb(const std::string &) -> std::vector<int>;
 auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, const std::vector<std::string> &,
-           const std::vector<std::string> &, const std::filesystem::path &, bool);
+           const std::vector<std::string> &, const std::filesystem::path &,
+           const std::filesystem::path &, bool);
 auto get_terminal_size() -> Terminal;
 void list_templates(const std::filesystem::path &, const bool &);
 void list_schemes(const std::filesystem::path &, const bool &);
@@ -191,8 +192,6 @@ parse_template_dir(const std::filesystem::path &directory) -> std::vector<Templa
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
 		if (!std::filesystem::is_regular_file(entry.path() / "templates" / "config.yaml")) {
-			std::cout << "error: cannot get config file for " << entry.path()
-				  << std::endl;
 			continue;
 		}
 
@@ -310,8 +309,8 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 
 void
 build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string> &opt_templates,
-      const std::vector<std::string> &opt_schemes, const std::filesystem::path &opt_output,
-      bool make)
+      const std::vector<std::string> &opt_schemes, const std::filesystem::path &opt_build_dir,
+      const std::filesystem::path &opt_output, bool make)
 {
 	std::vector<Template> templates;
 	std::vector<Scheme> schemes;
@@ -320,7 +319,7 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 		bool good = false;
 
 		for (const std::filesystem::directory_entry &file :
-		     std::filesystem::directory_iterator(std::filesystem::current_path())) {
+		     std::filesystem::directory_iterator(opt_build_dir)) {
 			if (file.is_regular_file() && file.path().extension() == ".yaml") {
 				good = true;
 				break;
@@ -328,8 +327,7 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 		}
 
 		if (good) {
-			std::vector<Scheme> parse_scheme =
-				get_scheme(std::filesystem::current_path());
+			std::vector<Scheme> parse_scheme = get_scheme(opt_build_dir);
 			schemes.insert(schemes.begin(), parse_scheme.begin(), parse_scheme.end());
 		} else {
 			schemes = parse_scheme_dir(opt_cache_dir / "schemes");
@@ -339,9 +337,9 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 	}
 
 	if (make) {
-		if (std::filesystem::is_directory(std::filesystem::current_path() / "templates")) {
+		if (std::filesystem::is_directory(opt_build_dir / "templates")) {
 			std::vector<Template> parse_templates =
-				get_template(std::filesystem::current_path() / "templates");
+				get_template(opt_build_dir / "templates");
 			templates.insert(templates.begin(), parse_templates.begin(),
 			                 parse_templates.end());
 		} else {
@@ -352,13 +350,14 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 	}
 
 #pragma omp parallel for default(none) \
-	shared(opt_templates, opt_schemes, templates, schemes, opt_output, make)
+	shared(opt_templates, opt_schemes, templates, schemes, opt_build_dir, opt_output, make)
 	for (const Scheme &s : schemes) {
 		if (!opt_schemes.empty() &&
 		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) == opt_schemes.end())
 			continue;
 
-#pragma omp parallel for default(none) shared(opt_templates, templates, s, opt_output, make)
+#pragma omp parallel for default(none) \
+	shared(opt_templates, templates, s, opt_build_dir, opt_output, make)
 		// NOLINTNEXTLINE (openmp-exception-escape)
 		for (Template t : templates) {
 			if (!opt_templates.empty() &&
@@ -403,7 +402,7 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 			std::filesystem::path output_dir;
 
 			if (make)
-				output_dir = opt_output / t.output;
+				output_dir = opt_build_dir / opt_output / t.name / t.output;
 			else
 				output_dir = opt_output / t.name / t.output;
 
@@ -659,18 +658,28 @@ main(int argc, char *argv[]) -> int
 			}
 		}
 
-		build(opt_cache_dir, opt_templates, opt_schemes, opt_output, false);
+		build(opt_cache_dir, opt_templates, opt_schemes, "", opt_output, false);
 	} else if (std::strcmp(args[optind], "make") == 0) {
 		std::vector<std::string> opt_templates;
 		std::vector<std::string> opt_schemes;
+		std::filesystem::path opt_build_dir = std::filesystem::current_path();
 		std::filesystem::path opt_output = "base16-themes";
 
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
-		while ((opt = getopt(argc, argv, "c:t:s:o:")) != EOF) {
+		while ((opt = getopt(argc, argv, "c:C:t:s:o:")) != EOF) {
 			switch (opt) {
 			case 'c':
 				if (std::filesystem::is_directory(optarg)) {
 					opt_cache_dir = optarg;
+				} else {
+					std::cout << "error: directory not found: " << optarg
+						  << std::endl;
+					return 1;
+				}
+				break;
+			case 'C':
+				if (std::filesystem::is_directory(optarg)) {
+					opt_build_dir = optarg;
 				} else {
 					std::cout << "error: directory not found: " << optarg
 						  << std::endl;
@@ -705,7 +714,7 @@ main(int argc, char *argv[]) -> int
 			}
 		}
 
-		build(opt_cache_dir, opt_templates, opt_schemes, opt_output, true);
+		build(opt_cache_dir, opt_templates, opt_schemes, opt_build_dir, opt_output, true);
 	} else if (std::strcmp(args[optind], "list") == 0) {
 		bool opt_show_template = true;
 		bool opt_show_scheme = true;
@@ -744,6 +753,12 @@ main(int argc, char *argv[]) -> int
 			     "   -l -- use original base16 sources\n\n"
 			     "build options:\n"
 			     "   -c -- specify cache directory\n"
+			     "   -s -- only build specified schemes\n"
+			     "   -t -- only build specified templates\n"
+			     "   -o -- specify output directory\n\n"
+			     "make options:\n"
+			     "   -c -- specify cache directory\n"
+			     "   -C -- specify directory to build\n"
 			     "   -s -- only build specified schemes\n"
 			     "   -t -- only build specified templates\n"
 			     "   -o -- specify output directory\n\n"

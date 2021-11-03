@@ -29,10 +29,11 @@ _cbase16_build() {
 		'-o[set output directory]:directory:_directories'
 }
 
-(( $+function[_cbase16_build] )) ||
+(( $+function[_cbase16_make] )) ||
 _cbase16_make() {
 	_arguments -C \
 		'-c[set cache directory]:directory:_directories' \
+		'-C[set target build directory]:directory:_directories' \
 		'-s[only build specified schemes]:scheme:_list_schemes' \
 		'-t[only build specified templates]:template:_list_templates' \
 		'-o[set output directory]:directory:_directories'

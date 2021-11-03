@@ -25,6 +25,13 @@ Build options:
 - -t: only build specified templates
 - -o: specify output directory
 
+Make options:
+- -c: specify cache directory
+- -C: specify directory to build
+- -s: only build specified schemes
+- -t: only build specified templates
+- -o: specify output directory
+
 List options:
 - -s: only show schemes
 - -t: only show templates
