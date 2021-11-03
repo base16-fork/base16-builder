@@ -38,6 +38,14 @@ else the cache directory is set to `$HOME/.cache`
 After running `update`, the file structure for the cache directory will be
 structured as follows:
 
+- `/sources.yaml`
+- `/schemes/[name]/*.yaml` -- Scheme files
+- `/templates/[name]/templates/*.mustache` -- Template files
+- `/templates/[name]/templates/config.yaml` -- Template configuration file
+
+If the `update` option is coupled with `-l`, the cache directory will be
+structured as follows:
+
 - `/sources.yaml` -- Holds a list of source repositories for schemes and templates
 - `/sources/schemes/list.yaml` -- Holds a list of scheme repositories
 - `/sources/templates/list.yaml` -- Holds a list of template repositories
