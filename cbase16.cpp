@@ -427,7 +427,8 @@ get_terminal_size() -> Terminal
 	struct winsize w {
 		width, height
 	};
-	ioctl(fileno(stdout), TIOCGWINSZ, &w); // NOLINT (cppcoreguidelines-pro-type-vararg)
+	// NOLINTNEXTLINE (cppcoreguidelines-pro-type-vararg)
+	ioctl(fileno(stdout), TIOCGWINSZ, &w);
 	width = w.ws_col;
 	height = w.ws_row;
 #elif defined(_WIN32)
@@ -577,14 +578,18 @@ main(int argc, char *argv[]) -> int
 	std::filesystem::path opt_cache_dir;
 
 #if defined(__linux__)
-	if (std::getenv("XDG_CACHE_HOME") != nullptr) // NOLINT (concurrency-mt-unsafe)
-		opt_cache_dir /= std::getenv("XDG_CACHE_HOME"); // NOLINT (concurrency-mt-unsafe)
+	// NOLINTNEXTLINE (concurrency-mt-unsafe)
+	if (std::getenv("XDG_CACHE_HOME") != nullptr)
+	// NOLINTNEXTLINE (concurrency-mt-unsafe)
+		opt_cache_dir /= std::getenv("XDG_CACHE_HOME");
 	else
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
 		opt_cache_dir /= (std::filesystem::path)std::getenv("HOME") / ".cache";
 #elif defined(_WIN32)
-	if (std::getenv("LOCALAPPDATA") != nullptr) // NOLINT (concurrency-mt-unsafe)
-		opt_cache_dir /= std::getenv("LOCALAPPDATA"); // NOLINT (concurrency-mt-unsafe)
+	// NOLINTNEXTLINE (concurrency-mt-unsafe)
+	if (std::getenv("LOCALAPPDATA") != nullptr)
+		// NOLINT (concurrency-mt-unsafe)
+		opt_cache_dir /= std::getenv("LOCALAPPDATA");
 #endif
 
 	opt_cache_dir /= "cbase16";
@@ -595,7 +600,8 @@ main(int argc, char *argv[]) -> int
 	if (std::strcmp(args[optind], "update") == 0) {
 		bool opt_legacy = false;
 
-		while ((opt = getopt(argc, argv, "c:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+		// NOLINTNEXTLINE (concurrency-mt-unsafe)
+		while ((opt = getopt(argc, argv, "c:")) != EOF) {
 			switch (opt) {
 			case 'c':
 				if (std::filesystem::is_directory(optarg)) {
@@ -720,8 +726,8 @@ main(int argc, char *argv[]) -> int
 		bool opt_show_scheme = true;
 		bool opt_raw = false;
 
-		while ((opt = getopt(argc, argv, "c:tsr")) !=
-		       EOF) { // NOLINT (concurrency-mt-unsafe)
+ 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
+		while ((opt = getopt(argc, argv, "c:tsr")) != EOF) {
 			switch (opt) {
 			case 'c':
 				if (std::filesystem::is_directory(optarg)) {
