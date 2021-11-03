@@ -33,6 +33,7 @@ Make options:
 - -o: specify output directory
 
 List options:
+- -c: specify cache directory
 - -s: only show schemes
 - -t: only show templates
 - -r: list items in single column

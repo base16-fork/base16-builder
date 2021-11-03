@@ -720,8 +720,18 @@ main(int argc, char *argv[]) -> int
 		bool opt_show_scheme = true;
 		bool opt_raw = false;
 
-		while ((opt = getopt(argc, argv, "tsr")) != EOF) { // NOLINT (concurrency-mt-unsafe)
+		while ((opt = getopt(argc, argv, "c:tsr")) !=
+		       EOF) { // NOLINT (concurrency-mt-unsafe)
 			switch (opt) {
+			case 'c':
+				if (std::filesystem::is_directory(optarg)) {
+					opt_cache_dir = optarg;
+				} else {
+					std::cout << "error: directory not found: " << optarg
+						  << std::endl;
+					return 1;
+				}
+				break;
 			case 't':
 				opt_show_scheme = false;
 				opt_show_template = true;
@@ -763,6 +773,7 @@ main(int argc, char *argv[]) -> int
 			     "   -t -- only build specified templates\n"
 			     "   -o -- specify output directory\n\n"
 			     "list options:\n"
+			     "   -c -- specify cache directory\n"
 			     "   -s -- only show schemes\n"
 			     "   -t -- only show templates\n"
 			     "   -r -- list items in single column"

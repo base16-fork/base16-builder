@@ -42,6 +42,7 @@ _cbase16_make() {
 (( $+function[_cbase16_list] )) ||
 _cbase16_list() {
 	_arguments -C \
+		'-c[set cache directory]:directory:_directories' \
 		'-s[display schemes only]' \
 		'-t[display templates only]' \
 		'-r[print items in a single column]' \
