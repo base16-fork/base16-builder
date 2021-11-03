@@ -52,8 +52,7 @@ auto hex_to_rgb(const std::string &) -> std::vector<int>;
 auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
 void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, const std::vector<std::string> &,
-           const std::vector<std::string> &, const std::filesystem::path &,
-           bool);
+           const std::vector<std::string> &, const std::filesystem::path &, bool);
 auto get_terminal_size() -> Terminal;
 void list_templates(const std::filesystem::path &, const bool &);
 void list_schemes(const std::filesystem::path &, const bool &);
@@ -122,13 +121,15 @@ update(const std::filesystem::path &opt_cache_dir, bool legacy)
 	}
 
 	git_libgit2_init();
-	
+
 	if (!legacy) {
 		clone(opt_cache_dir, "", opt_cache_dir / "sources.yaml");
 	} else {
 		clone(opt_cache_dir, "sources", opt_cache_dir / "sources.yaml");
-		clone(opt_cache_dir, "schemes", opt_cache_dir / "sources" / "schemes" / "list.yaml");
-		clone(opt_cache_dir, "templates", opt_cache_dir / "sources" / "templates" / "list.yaml");
+		clone(opt_cache_dir, "schemes",
+		      opt_cache_dir / "sources" / "schemes" / "list.yaml");
+		clone(opt_cache_dir, "templates",
+		      opt_cache_dir / "sources" / "templates" / "list.yaml");
 	}
 
 	git_libgit2_shutdown();
@@ -141,8 +142,7 @@ get_template(const std::filesystem::path &directory) -> std::vector<Template>
 
 	if (!std::filesystem::is_directory(directory)) {
 		std::cout << "warning: " << directory
-			  << " template directory is either empty or not found"
-			  << std::endl;
+			  << " template directory is either empty or not found" << std::endl;
 		return templates;
 	}
 
@@ -310,7 +310,8 @@ replace_all(std::string &str, const std::string &from, const std::string &to)
 
 void
 build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string> &opt_templates,
-      const std::vector<std::string> &opt_schemes, const std::filesystem::path &opt_output, bool make)
+      const std::vector<std::string> &opt_schemes, const std::filesystem::path &opt_output,
+      bool make)
 {
 	std::vector<Template> templates;
 	std::vector<Scheme> schemes;
@@ -327,7 +328,8 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 		}
 
 		if (good) {
-			std::vector<Scheme> parse_scheme = get_scheme(std::filesystem::current_path());
+			std::vector<Scheme> parse_scheme =
+				get_scheme(std::filesystem::current_path());
 			schemes.insert(schemes.begin(), parse_scheme.begin(), parse_scheme.end());
 		} else {
 			schemes = parse_scheme_dir(opt_cache_dir / "schemes");
@@ -338,8 +340,10 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 
 	if (make) {
 		if (std::filesystem::is_directory(std::filesystem::current_path() / "templates")) {
-			std::vector<Template> parse_templates = get_template(std::filesystem::current_path() / "templates");
-			templates.insert(templates.begin(), parse_templates.begin(), parse_templates.end());
+			std::vector<Template> parse_templates =
+				get_template(std::filesystem::current_path() / "templates");
+			templates.insert(templates.begin(), parse_templates.begin(),
+			                 parse_templates.end());
 		} else {
 			templates = parse_template_dir(opt_cache_dir / "templates");
 		}
@@ -669,7 +673,7 @@ main(int argc, char *argv[]) -> int
 					opt_cache_dir = optarg;
 				} else {
 					std::cout << "error: directory not found: " << optarg
-						<< std::endl;
+						  << std::endl;
 					return 1;
 				}
 				break;
