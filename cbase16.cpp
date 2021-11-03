@@ -328,13 +328,13 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 	}
 
 #pragma omp parallel for default(none) \
-	shared(opt_templates, opt_schemes, templates, schemes, opt_output)
+	shared(opt_templates, opt_schemes, templates, schemes, opt_output, make)
 	for (const Scheme &s : schemes) {
 		if (!opt_schemes.empty() &&
 		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) == opt_schemes.end())
 			continue;
 
-#pragma omp parallel for default(none) shared(opt_templates, templates, s, opt_output)
+#pragma omp parallel for default(none) shared(opt_templates, templates, s, opt_output, make)
 		// NOLINTNEXTLINE (openmp-exception-escape)
 		for (Template t : templates) {
 			if (!opt_templates.empty() &&
@@ -376,7 +376,13 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 			replace_all(t.data, "{{scheme-name}}", s.name);
 			replace_all(t.data, "{{scheme-author}}", s.author);
 
-			std::filesystem::path output_dir = opt_output / t.name / t.output;
+			std::filesystem::path output_dir;
+
+			if (make)
+				output_dir = opt_output / t.output;
+			else
+				output_dir = opt_output / t.name / t.output;
+
 			std::filesystem::create_directories(output_dir);
 			std::ofstream output_file(output_dir / ("base16-" + s.slug + t.extension));
 
