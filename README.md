@@ -17,6 +17,7 @@ Command:
 
 Update options:
 - -c: specify cache directory
+- -l: use original base16 sources
 
 Build options:
 - -c: specify cache directory

@@ -43,7 +43,7 @@ constexpr int RGB_MIN_SIZE = 3;
 constexpr int RGB_DEC = 255;
 
 void clone(const std::filesystem::path &, const std::string &, const std::string &);
-void update(const std::filesystem::path &);
+void update(const std::filesystem::path &, bool);
 auto get_template(const std::filesystem::path &) -> std::vector<Template>;
 auto get_scheme(const std::filesystem::path &) -> std::vector<Scheme>;
 auto parse_template_dir(const std::filesystem::path &) -> std::vector<Template>;
@@ -87,20 +87,32 @@ clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const 
 }
 
 void
-update(const std::filesystem::path &opt_cache_dir)
+update(const std::filesystem::path &opt_cache_dir, bool legacy)
 {
 	std::ofstream file(opt_cache_dir / "sources.yaml");
 
 	if (file.good()) {
 		YAML::Emitter source;
-		source << YAML::BeginMap;
-		source << YAML::Key << "schemes";
-		source << YAML::Value
-		       << "https://github.com/base16-fork/base16-schemes-recipe.git";
-		source << YAML::Key << "templates";
-		source << YAML::Value
-		       << "https://github.com/base16-fork/base16-templates-recipe.git";
-		source << YAML::EndMap;
+
+		if (!legacy) {
+			source << YAML::BeginMap;
+			source << YAML::Key << "schemes";
+			source << YAML::Value
+			       << "https://github.com/base16-fork/base16-schemes-recipe.git";
+			source << YAML::Key << "templates";
+			source << YAML::Value
+			       << "https://github.com/base16-fork/base16-templates-recipe.git";
+			source << YAML::EndMap;
+		} else {
+			source << YAML::BeginMap;
+			source << YAML::Key << "schemes";
+			source << YAML::Value
+			       << "https://github.com/chriskempson/base16-schemes-source.git";
+			source << YAML::Key << "templates";
+			source << YAML::Value
+			       << "https://github.com/chriskempson/base16-templates-source.git";
+			source << YAML::EndMap;
+		}
 
 		file << source.c_str();
 		file.close();
@@ -110,7 +122,15 @@ update(const std::filesystem::path &opt_cache_dir)
 	}
 
 	git_libgit2_init();
-	clone(opt_cache_dir, "", opt_cache_dir / "sources.yaml");
+	
+	if (!legacy) {
+		clone(opt_cache_dir, "", opt_cache_dir / "sources.yaml");
+	} else {
+		clone(opt_cache_dir, "sources", opt_cache_dir / "sources.yaml");
+		clone(opt_cache_dir, "schemes", opt_cache_dir / "sources" / "schemes" / "list.yaml");
+		clone(opt_cache_dir, "templates", opt_cache_dir / "sources" / "templates" / "list.yaml");
+	}
+
 	git_libgit2_shutdown();
 }
 
@@ -570,6 +590,8 @@ main(int argc, char *argv[]) -> int
 		std::filesystem::create_directory(opt_cache_dir);
 
 	if (std::strcmp(args[optind], "update") == 0) {
+		bool opt_legacy = false;
+
 		while ((opt = getopt(argc, argv, "c:")) != EOF) { // NOLINT (concurrency-mt-unsafe)
 			switch (opt) {
 			case 'c':
@@ -581,9 +603,13 @@ main(int argc, char *argv[]) -> int
 					return 1;
 				}
 				break;
+			case 'l':
+				opt_legacy = true;
+				break;
 			}
 		}
-		update(opt_cache_dir);
+
+		update(opt_cache_dir, opt_legacy);
 	} else if (std::strcmp(args[optind], "build") == 0) {
 		std::vector<std::string> opt_templates;
 		std::vector<std::string> opt_schemes;
@@ -711,6 +737,7 @@ main(int argc, char *argv[]) -> int
 			     "   help    -- display usage message\n\n"
 			     "update options:\n"
 			     "   -c -- specify cache directory\n\n"
+			     "   -l -- use original base16 sources\n\n"
 			     "build options:\n"
 			     "   -c -- specify cache directory\n"
 			     "   -s -- only build specified schemes\n"
