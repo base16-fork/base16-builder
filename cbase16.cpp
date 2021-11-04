@@ -401,10 +401,14 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 
 			std::filesystem::path output_dir;
 
-			if (make)
-				output_dir = opt_build_dir / opt_output / t.name / t.output;
-			else
+			if (make) {
+				if (opt_output.empty())
+					output_dir = opt_build_dir / t.name / t.output;
+				else
+					output_dir = opt_output / t.name / t.output;
+			} else {
 				output_dir = opt_output / t.name / t.output;
+			}
 
 			std::filesystem::create_directories(output_dir);
 			std::ofstream output_file(output_dir / ("base16-" + s.slug + t.extension));
@@ -669,7 +673,7 @@ main(int argc, char *argv[]) -> int
 		std::vector<std::string> opt_templates;
 		std::vector<std::string> opt_schemes;
 		std::filesystem::path opt_build_dir = std::filesystem::current_path();
-		std::filesystem::path opt_output = "base16-themes";
+		std::filesystem::path opt_output = "";
 
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
 		while ((opt = getopt(argc, argv, "c:C:t:s:o:")) != EOF) {
