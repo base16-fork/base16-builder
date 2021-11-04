@@ -8,35 +8,35 @@ cbase16 \[command\] \[options\]
 
 Command:
 
-- update: fetch all necessary sources for building
-- build: generate colorscheme templates
-- make: build current directory
-- list: display available schemes and templates
-- version: display version
-- help: display usage message
+- **`update`**: fetch all necessary sources for building
+- **`build`**: generate colorscheme templates
+- **`make`**: build current directory
+- **`list`**: display available schemes and templates
+- **`version`**: display version
+- **`help`**: display usage message
 
-Update options:
-- -c: specify cache directory
-- -l: use original base16 sources
+Update options
+- **`-c`**: specify cache directory
+- **`-l`**: use original base16 sources
 
-Build options:
-- -c: specify cache directory
-- -s: only build specified schemes
-- -t: only build specified templates
-- -o: specify output directory
+Build options
+- **`-c`**: specify cache directory
+- **`-s`**: only build specified schemes
+- **`-t`**: only build specified templates
+- **`-o`**: specify output directory
 
-Make options:
-- -c: specify cache directory
-- -C: specify directory to build
-- -s: only build specified schemes
-- -t: only build specified templates
-- -o: specify output directory
+Make options
+- **`-c`**: specify cache directory
+- **`-C`**: specify directory to build
+- **`-s`**: only build specified schemes
+- **`-t`**: only build specified templates
+- **`-o`**: specify output directory
 
-List options:
-- -c: specify cache directory
-- -s: only show schemes
-- -t: only show templates
-- -r: list items in single column
+List options
+- **`-c`**: specify cache directory
+- **`-s`**: only show schemes
+- **`-t`**: only show templates
+- **`-r`**: list items in single column
 
 ## File Structure
 
