@@ -8,9 +8,10 @@ PKG_CONFIG = pkg-config
 
 BCXXFLAGS = $(CFLAGS) $(CXXFLAGS) --std=c++20 -fopenmp
 BLDFLAGS = `$(PKG_CONFIG) --cflags --libs yaml-cpp libgit2`
+
 SRC = cbase16.cpp
 
-all: cbase16
+all: options cbase16
 
 options:
 	@echo cbase16 build options:
@@ -18,13 +19,13 @@ options:
 	@echo "LDFLAGS  = $(BLDFLAGS)"
 	@echo "CXX      = $(CXX)"
 
-cbase16: options
+cbase16:
 	$(CXX) $(SRC) $(BLDFLAGS) $(BCXXFLAGS) -o $@
 
 clean:
 	rm -f cbase16
 
-install:
+install: cbase16
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f cbase16 $(DESTDIR)$(PREFIX)/bin
 	chmod 775 $(DESTDIR)$(PREFIX)/bin/cbase16
