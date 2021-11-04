@@ -605,7 +605,7 @@ main(int argc, char *argv[]) -> int
 		bool opt_legacy = false;
 
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
-		while ((opt = getopt(argc, argv, "c:")) != EOF) {
+		while ((opt = getopt(argc, argv, "c:l")) != EOF) {
 			switch (opt) {
 			case 'c':
 				if (std::filesystem::is_directory(optarg)) {
