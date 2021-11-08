@@ -1,6 +1,3 @@
 cbase16
-!completion/
-sources.yaml
-*/
 .cache/
 compile_commands.json
