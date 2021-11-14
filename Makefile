@@ -19,7 +19,7 @@ options:
 	@echo "LDFLAGS  = $(BLDFLAGS)"
 	@echo "CXX      = $(CXX)"
 
-cbase16:
+cbase16: $(SRC)
 	$(CXX) $(SRC) $(BLDFLAGS) $(BCXXFLAGS) -o $@
 
 clean:
