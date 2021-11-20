@@ -1,7 +1,6 @@
 #include <algorithm>
-#include <cerrno>
-#include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -82,8 +81,7 @@ clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const 
 			git_repository_free(repo);
 		}
 	} else {
-		std::cout << "error: cannot read " + source << std::endl;
-		_exit(1);
+		throw std::runtime_error("error: cannot read " + source);
 	}
 }
 
@@ -118,20 +116,24 @@ update(const std::filesystem::path &opt_cache_dir, bool legacy)
 		file << source.c_str();
 		file.close();
 	} else {
-		std::cout << "error: fail to write sources.yaml to " << opt_cache_dir << std::endl;
-		_exit(1);
+		throw std::runtime_error("error: fail to write sources.yaml to " +
+		                         opt_cache_dir.string());
 	}
 
 	git_libgit2_init();
 
-	if (!legacy) {
-		clone(opt_cache_dir, "", opt_cache_dir / "sources.yaml");
-	} else {
-		clone(opt_cache_dir, "sources", opt_cache_dir / "sources.yaml");
-		clone(opt_cache_dir, "schemes",
-		      opt_cache_dir / "sources" / "schemes" / "list.yaml");
-		clone(opt_cache_dir, "templates",
-		      opt_cache_dir / "sources" / "templates" / "list.yaml");
+	try {
+		if (!legacy) {
+			clone(opt_cache_dir, "", opt_cache_dir / "sources.yaml");
+		} else {
+			clone(opt_cache_dir, "sources", opt_cache_dir / "sources.yaml");
+			clone(opt_cache_dir, "schemes",
+			      opt_cache_dir / "sources" / "schemes" / "list.yaml");
+			clone(opt_cache_dir, "templates",
+			      opt_cache_dir / "sources" / "templates" / "list.yaml");
+		}
+	} catch (std::runtime_error &e) {
+		throw e;
 	}
 
 	git_libgit2_shutdown();
@@ -142,11 +144,9 @@ get_template(const std::filesystem::path &directory) -> std::vector<Template>
 {
 	std::vector<Template> templates;
 
-	if (!std::filesystem::is_directory(directory)) {
-		std::cout << "warning: " << directory
-			  << " template directory is either empty or not found" << std::endl;
-		return templates;
-	}
+	if (!std::filesystem::is_directory(directory))
+		throw std::runtime_error("warning: " + directory.string() +
+		                         " template directory is either empty or not found");
 
 	for (const std::filesystem::directory_entry &file :
 	     std::filesystem::directory_iterator(directory)) {
@@ -196,9 +196,14 @@ parse_template_dir(const std::filesystem::path &directory) -> std::vector<Templa
 			continue;
 		}
 
-		std::vector<Template> parse_templates = get_template(entry.path() / "templates");
-
-		templates.insert(templates.begin(), parse_templates.begin(), parse_templates.end());
+		try {
+			std::vector<Template> parse_templates =
+				get_template(entry.path() / "templates");
+			templates.insert(templates.begin(), parse_templates.begin(),
+			                 parse_templates.end());
+		} catch (std::runtime_error &e) {
+			continue;
+		}
 	}
 
 	return templates;
@@ -209,11 +214,9 @@ get_scheme(const std::filesystem::path &directory) -> std::vector<Scheme>
 {
 	std::vector<Scheme> schemes;
 
-	if (!std::filesystem::is_directory(directory)) {
-		std::cout << "warning: " << directory
-			  << " scheme directory is either empty or not found" << std::endl;
-		return schemes;
-	}
+	if (!std::filesystem::is_directory(directory))
+		throw std::runtime_error("warning: " + directory.string() +
+		                         " scheme directory is either empty or not found");
 
 	for (const std::filesystem::directory_entry &file :
 	     std::filesystem::directory_iterator(directory)) {
@@ -250,9 +253,12 @@ parse_scheme_dir(const std::filesystem::path &directory) -> std::vector<Scheme>
 
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
-		std::vector<Scheme> parse_schemes = get_scheme(entry);
-
-		schemes.insert(schemes.end(), parse_schemes.begin(), parse_schemes.end());
+		try {
+			std::vector<Scheme> parse_schemes = get_scheme(entry);
+			schemes.insert(schemes.end(), parse_schemes.begin(), parse_schemes.end());
+		} catch (std::runtime_error &e) {
+			continue;
+		}
 	}
 
 	return schemes;
@@ -266,7 +272,7 @@ hex_to_rgb(const std::string &hex) -> std::vector<int>
 	std::string str;
 
 	if (hex.size() != HEX_MIN_LENGTH)
-		return rgb;
+		throw std::runtime_error("error: hex does not reach minimum length of 6");
 
 #pragma omp parallel for default(none) shared(hex, str, ss, rgb)
 	for (int i = 0; i < 3; ++i) {
@@ -285,7 +291,7 @@ rgb_to_dec(const std::vector<int> &rgb) -> std::vector<long double>
 	std::vector<long double> dec(3);
 
 	if (rgb.size() != RGB_MIN_SIZE)
-		return dec;
+		throw std::runtime_error("error: rgb value does not exceed minimum size of 3");
 
 #pragma omp parallel for default(none) shared(dec, rgb)
 	for (int i = 0; i < 3; ++i)
@@ -369,8 +375,16 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 				std::vector<std::string> hex = { color.substr(0, 2),
 					                         color.substr(2, 2),
 					                         color.substr(4, 2) };
-				std::vector<int> rgb = hex_to_rgb(color);
-				std::vector<long double> dec = rgb_to_dec(rgb);
+
+				std::vector<int> rgb;
+				std::vector<long double> dec;
+
+				try {
+					rgb = hex_to_rgb(color);
+					dec = rgb_to_dec(rgb);
+				} catch (std::runtime_error &e) {
+					continue;
+				}
 
 				replace_all(t.data, "{{" + base + "-hex-r" + "}}", hex[0]);
 				replace_all(t.data, "{{" + base + "-hex-g" + "}}", hex[1]);
@@ -625,7 +639,12 @@ main(int argc, char *argv[]) -> int
 			}
 		}
 
-		update(opt_cache_dir, opt_legacy);
+		try {
+			update(opt_cache_dir, opt_legacy);
+		} catch (std::runtime_error &e) {
+			std::cerr << e.what() << std::endl;
+			return -ENOENT;
+		}
 	} else if (std::strcmp(args[optind], "build") == 0) {
 		std::vector<std::string> opt_templates;
 		std::vector<std::string> opt_schemes;
