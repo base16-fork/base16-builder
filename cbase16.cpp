@@ -62,26 +62,24 @@ void list(const std::filesystem::path &, const bool &, const bool &, const bool 
 void
 clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const std::string &source)
 {
-	if (std::filesystem::is_regular_file(source)) {
-		YAML::Node file = YAML::LoadFile(source);
+	if (!std::filesystem::is_regular_file(source))
+		throw std::runtime_error("error: cannot read " + source);
+	YAML::Node file = YAML::LoadFile(source);
 
-		std::vector<std::string> token_key;
-		std::vector<std::string> token_value;
+	std::vector<std::string> token_key;
+	std::vector<std::string> token_value;
 
-		for (YAML::const_iterator it = file.begin(); it != file.end(); ++it) {
-			token_key.emplace_back(it->first.as<std::string>());
-			token_value.emplace_back(it->second.as<std::string>());
-		}
+	for (YAML::const_iterator it = file.begin(); it != file.end(); ++it) {
+		token_key.emplace_back(it->first.as<std::string>());
+		token_value.emplace_back(it->second.as<std::string>());
+	}
 
 #pragma omp parallel for default(none) shared(token_key, token_value, opt_cache_dir, dir)
-		for (int i = 0; i < token_key.size(); ++i) {
-			git_repository *repo = nullptr;
-			git_clone(&repo, token_value[i].c_str(),
-			          (opt_cache_dir / dir / token_key[i]).c_str(), nullptr);
-			git_repository_free(repo);
-		}
-	} else {
-		throw std::runtime_error("error: cannot read " + source);
+	for (int i = 0; i < token_key.size(); ++i) {
+		git_repository *repo = nullptr;
+		git_clone(&repo, token_value[i].c_str(),
+		          (opt_cache_dir / dir / token_key[i]).c_str(), nullptr);
+		git_repository_free(repo);
 	}
 }
 
@@ -90,35 +88,34 @@ update(const std::filesystem::path &opt_cache_dir, bool legacy)
 {
 	std::ofstream file(opt_cache_dir / "sources.yaml");
 
-	if (file.good()) {
-		YAML::Emitter source;
-
-		if (!legacy) {
-			source << YAML::BeginMap;
-			source << YAML::Key << "schemes";
-			source << YAML::Value
-			       << "https://github.com/base16-fork/base16-schemes-recipe.git";
-			source << YAML::Key << "templates";
-			source << YAML::Value
-			       << "https://github.com/base16-fork/base16-templates-recipe.git";
-			source << YAML::EndMap;
-		} else {
-			source << YAML::BeginMap;
-			source << YAML::Key << "schemes";
-			source << YAML::Value
-			       << "https://github.com/chriskempson/base16-schemes-source.git";
-			source << YAML::Key << "templates";
-			source << YAML::Value
-			       << "https://github.com/chriskempson/base16-templates-source.git";
-			source << YAML::EndMap;
-		}
-
-		file << source.c_str();
-		file.close();
-	} else {
+	if (!file.good())
 		throw std::runtime_error("error: fail to write sources.yaml to " +
 		                         opt_cache_dir.string());
+
+	YAML::Emitter source;
+
+	if (!legacy) {
+		source << YAML::BeginMap;
+		source << YAML::Key << "schemes";
+		source << YAML::Value
+			<< "https://github.com/base16-fork/base16-schemes-recipe.git";
+		source << YAML::Key << "templates";
+		source << YAML::Value
+			<< "https://github.com/base16-fork/base16-templates-recipe.git";
+		source << YAML::EndMap;
+	} else {
+		source << YAML::BeginMap;
+		source << YAML::Key << "schemes";
+		source << YAML::Value
+			<< "https://github.com/chriskempson/base16-schemes-source.git";
+		source << YAML::Key << "templates";
+		source << YAML::Value
+			<< "https://github.com/chriskempson/base16-templates-source.git";
+		source << YAML::EndMap;
 	}
+
+	file << source.c_str();
+	file.close();
 
 	git_libgit2_init();
 
