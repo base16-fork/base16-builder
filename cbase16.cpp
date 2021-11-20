@@ -46,11 +46,11 @@ void clone(const std::filesystem::path &, const std::string &, const std::string
 void update(const std::filesystem::path &, bool);
 auto get_template(const std::filesystem::path &) -> std::vector<Template>;
 auto get_scheme(const std::filesystem::path &) -> std::vector<Scheme>;
-auto parse_template_dir(const std::filesystem::path &) -> std::vector<Template>;
-auto parse_scheme_dir(const std::filesystem::path &) -> std::vector<Scheme>;
-auto hex_to_rgb(const std::string &) -> std::vector<int>;
-auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
-void replace_all(std::string &, const std::string &, const std::string &);
+inline auto parse_template_dir(const std::filesystem::path &) -> std::vector<Template>;
+inline auto parse_scheme_dir(const std::filesystem::path &) -> std::vector<Scheme>;
+inline auto hex_to_rgb(const std::string &) -> std::vector<int>;
+inline auto rgb_to_dec(const std::vector<int> &) -> std::vector<long double>;
+inline void replace_all(std::string &, const std::string &, const std::string &);
 void build(const std::filesystem::path &, const std::vector<std::string> &,
            const std::vector<std::string> &, const std::filesystem::path &,
            const std::filesystem::path &, bool);
@@ -184,7 +184,7 @@ get_template(const std::filesystem::path &directory) -> std::vector<Template>
 	return templates;
 }
 
-auto
+inline auto
 parse_template_dir(const std::filesystem::path &directory) -> std::vector<Template>
 {
 	std::vector<Template> templates;
@@ -242,7 +242,7 @@ get_scheme(const std::filesystem::path &directory) -> std::vector<Scheme>
 	return schemes;
 }
 
-auto
+inline auto
 parse_scheme_dir(const std::filesystem::path &directory) -> std::vector<Scheme>
 {
 	std::vector<Scheme> schemes;
@@ -257,7 +257,7 @@ parse_scheme_dir(const std::filesystem::path &directory) -> std::vector<Scheme>
 	return schemes;
 }
 
-auto
+inline auto
 hex_to_rgb(const std::string &hex) -> std::vector<int>
 {
 	std::vector<int> rgb(3);
@@ -278,7 +278,7 @@ hex_to_rgb(const std::string &hex) -> std::vector<int>
 	return rgb;
 }
 
-auto
+inline auto
 rgb_to_dec(const std::vector<int> &rgb) -> std::vector<long double>
 {
 	std::vector<long double> dec(3);
@@ -293,7 +293,7 @@ rgb_to_dec(const std::vector<int> &rgb) -> std::vector<long double>
 	return dec;
 }
 
-void
+inline void
 replace_all(std::string &str, const std::string &from, const std::string &to)
 {
 	if (from.empty())
