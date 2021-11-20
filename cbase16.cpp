@@ -144,10 +144,6 @@ get_template(const std::filesystem::path &directory) -> std::vector<Template>
 {
 	std::vector<Template> templates;
 
-	if (!std::filesystem::is_directory(directory))
-		throw std::runtime_error("warning: " + directory.string() +
-		                         " template directory is either empty or not found");
-
 	for (const std::filesystem::directory_entry &file :
 	     std::filesystem::directory_iterator(directory)) {
 		if (file.path().extension() == ".mustache") {
@@ -192,18 +188,13 @@ parse_template_dir(const std::filesystem::path &directory) -> std::vector<Templa
 
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
-		if (!std::filesystem::is_regular_file(entry.path() / "templates" / "config.yaml")) {
+		if (!std::filesystem::is_directory(entry) ||
+		    !std::filesystem::is_regular_file(entry.path() / "templates" / "config.yaml")) {
 			continue;
 		}
 
-		try {
-			std::vector<Template> parse_templates =
-				get_template(entry.path() / "templates");
-			templates.insert(templates.begin(), parse_templates.begin(),
-			                 parse_templates.end());
-		} catch (std::runtime_error &e) {
-			continue;
-		}
+		std::vector<Template> parse_templates = get_template(entry.path() / "templates");
+		templates.insert(templates.begin(), parse_templates.begin(), parse_templates.end());
 	}
 
 	return templates;
@@ -213,10 +204,6 @@ auto
 get_scheme(const std::filesystem::path &directory) -> std::vector<Scheme>
 {
 	std::vector<Scheme> schemes;
-
-	if (!std::filesystem::is_directory(directory))
-		throw std::runtime_error("warning: " + directory.string() +
-		                         " scheme directory is either empty or not found");
 
 	for (const std::filesystem::directory_entry &file :
 	     std::filesystem::directory_iterator(directory)) {
@@ -253,12 +240,11 @@ parse_scheme_dir(const std::filesystem::path &directory) -> std::vector<Scheme>
 
 	for (const std::filesystem::directory_entry &entry :
 	     std::filesystem::directory_iterator(directory)) {
-		try {
-			std::vector<Scheme> parse_schemes = get_scheme(entry);
-			schemes.insert(schemes.end(), parse_schemes.begin(), parse_schemes.end());
-		} catch (std::runtime_error &e) {
+		if (!std::filesystem::is_directory(entry))
 			continue;
-		}
+
+		std::vector<Scheme> parse_schemes = get_scheme(entry);
+		schemes.insert(schemes.end(), parse_schemes.begin(), parse_schemes.end());
 	}
 
 	return schemes;
