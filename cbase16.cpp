@@ -357,14 +357,13 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 	}
 
 #pragma omp parallel for default(none) shared(opt_templates, opt_schemes, templates, schemes, \
-                                              opt_build_dir, opt_output, make, std::cout)
+                                              opt_build_dir, opt_output, make, std::cerr)
 	for (const Scheme &s : schemes) {
 		if (!opt_schemes.empty() &&
 		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) == opt_schemes.end())
 			continue;
-
 #pragma omp parallel for default(none) \
-	shared(opt_templates, templates, s, opt_build_dir, opt_output, make, std::cout)
+	shared(opt_templates, templates, s, opt_build_dir, opt_output, make, std::cerr)
 		for (Template t : templates) {
 			if (!opt_templates.empty() &&
 			    std::find(opt_templates.begin(), opt_templates.end(), t.name) ==
@@ -431,7 +430,7 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 				output_file << t.data;
 				output_file.close();
 			} catch (std::exception const &e) {
-				std::cout << "error: cannot create " << output_dir << "base16-"
+				std::cerr << "error: cannot create " << output_dir << "base16-"
 					  << s.slug << t.extension << std::endl;
 			}
 		}
@@ -589,7 +588,7 @@ main(int argc, char *argv[]) -> int
 	std::span args(argv, size_t(argc));
 
 	if (args[optind] == nullptr) {
-		std::cout << "error: no command is detected" << std::endl;
+		std::cerr << "error: no command is detected" << std::endl;
 		return -EINVAL;
 	}
 
@@ -628,7 +627,7 @@ main(int argc, char *argv[]) -> int
 				if (std::filesystem::is_directory(optarg)) {
 					opt_cache_dir = optarg;
 				} else {
-					std::cout << "error: directory not found: " << optarg
+					std::cerr << "error: directory not found: " << optarg
 						  << std::endl;
 					return -ENOTDIR;
 				}
@@ -657,7 +656,7 @@ main(int argc, char *argv[]) -> int
 				if (std::filesystem::is_directory(optarg)) {
 					opt_cache_dir = optarg;
 				} else {
-					std::cout << "error: directory not found: " << optarg
+					std::cerr << "error: directory not found: " << optarg
 						  << std::endl;
 					return -ENOTDIR;
 				}
@@ -704,7 +703,7 @@ main(int argc, char *argv[]) -> int
 				if (std::filesystem::is_directory(optarg)) {
 					opt_cache_dir = optarg;
 				} else {
-					std::cout << "error: directory not found: " << optarg
+					std::cerr << "error: directory not found: " << optarg
 						  << std::endl;
 					return -ENOTDIR;
 				}
@@ -713,7 +712,7 @@ main(int argc, char *argv[]) -> int
 				if (std::filesystem::is_directory(optarg)) {
 					opt_build_dir = optarg;
 				} else {
-					std::cout << "error: directory not found: " << optarg
+					std::cerr << "error: directory not found: " << optarg
 						  << std::endl;
 					return -ENOTDIR;
 				}
@@ -759,7 +758,7 @@ main(int argc, char *argv[]) -> int
 				if (std::filesystem::is_directory(optarg)) {
 					opt_cache_dir = optarg;
 				} else {
-					std::cout << "error: directory not found: " << optarg
+					std::cerr << "error: directory not found: " << optarg
 						  << std::endl;
 					return -ENOTDIR;
 				}
@@ -811,7 +810,7 @@ main(int argc, char *argv[]) -> int
 			     "   -r -- list items in single column"
 			  << std::endl;
 	} else {
-		std::cout << "error: invalid command: " << args[optind] << std::endl;
+		std::cerr << "error: invalid command: " << args[optind] << std::endl;
 		return -EINVAL;
 	}
 
