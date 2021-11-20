@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -575,7 +576,7 @@ main(int argc, char *argv[]) -> int
 
 	if (args[optind] == nullptr) {
 		std::cout << "error: no command is detected" << std::endl;
-		return 1;
+		return -EINVAL;
 	}
 
 	int opt = 0;
@@ -615,7 +616,7 @@ main(int argc, char *argv[]) -> int
 				} else {
 					std::cout << "error: directory not found: " << optarg
 						  << std::endl;
-					return 1;
+					return -ENOTDIR;
 				}
 				break;
 			case 'l':
@@ -639,7 +640,7 @@ main(int argc, char *argv[]) -> int
 				} else {
 					std::cout << "error: directory not found: " << optarg
 						  << std::endl;
-					return 1;
+					return -ENOTDIR;
 				}
 				break;
 			case 't':
@@ -686,7 +687,7 @@ main(int argc, char *argv[]) -> int
 				} else {
 					std::cout << "error: directory not found: " << optarg
 						  << std::endl;
-					return 1;
+					return -ENOTDIR;
 				}
 				break;
 			case 'C':
@@ -695,7 +696,7 @@ main(int argc, char *argv[]) -> int
 				} else {
 					std::cout << "error: directory not found: " << optarg
 						  << std::endl;
-					return 1;
+					return -ENOTDIR;
 				}
 				break;
 			case 't':
@@ -741,7 +742,7 @@ main(int argc, char *argv[]) -> int
 				} else {
 					std::cout << "error: directory not found: " << optarg
 						  << std::endl;
-					return 1;
+					return -ENOTDIR;
 				}
 				break;
 			case 't':
@@ -792,7 +793,7 @@ main(int argc, char *argv[]) -> int
 			  << std::endl;
 	} else {
 		std::cout << "error: invalid command: " << args[optind] << std::endl;
-		return 1;
+		return -EINVAL;
 	}
 
 	return 0;
