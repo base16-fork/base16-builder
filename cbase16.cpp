@@ -349,16 +349,15 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 		templates = parse_template_dir(opt_cache_dir / "templates");
 	}
 
-#pragma omp parallel for default(none) \
-	shared(opt_templates, opt_schemes, templates, schemes, opt_build_dir, opt_output, make)
+#pragma omp parallel for default(none) shared(opt_templates, opt_schemes, templates, schemes, \
+                                              opt_build_dir, opt_output, make, std::cout)
 	for (const Scheme &s : schemes) {
 		if (!opt_schemes.empty() &&
 		    std::find(opt_schemes.begin(), opt_schemes.end(), s.slug) == opt_schemes.end())
 			continue;
 
 #pragma omp parallel for default(none) \
-	shared(opt_templates, templates, s, opt_build_dir, opt_output, make)
-		// NOLINTNEXTLINE (openmp-exception-escape)
+	shared(opt_templates, templates, s, opt_build_dir, opt_output, make, std::cout)
 		for (Template t : templates) {
 			if (!opt_templates.empty() &&
 			    std::find(opt_templates.begin(), opt_templates.end(), t.name) ==
@@ -413,9 +412,12 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 			std::filesystem::create_directories(output_dir);
 			std::ofstream output_file(output_dir / ("base16-" + s.slug + t.extension));
 
-			if (output_file.good()) {
+			try {
 				output_file << t.data;
 				output_file.close();
+			} catch (std::exception const &e) {
+				std::cout << "error: cannot create " << output_dir << "base16-"
+					  << s.slug << t.extension << std::endl;
 			}
 		}
 	}
@@ -584,7 +586,7 @@ main(int argc, char *argv[]) -> int
 #if defined(__linux__)
 	// NOLINTNEXTLINE (concurrency-mt-unsafe)
 	if (std::getenv("XDG_CACHE_HOME") != nullptr)
-	// NOLINTNEXTLINE (concurrency-mt-unsafe)
+		// NOLINTNEXTLINE (concurrency-mt-unsafe)
 		opt_cache_dir /= std::getenv("XDG_CACHE_HOME");
 	else
 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
@@ -730,7 +732,7 @@ main(int argc, char *argv[]) -> int
 		bool opt_show_scheme = true;
 		bool opt_raw = false;
 
- 		// NOLINTNEXTLINE (concurrency-mt-unsafe)
+		// NOLINTNEXTLINE (concurrency-mt-unsafe)
 		while ((opt = getopt(argc, argv, "c:tsr")) != EOF) {
 			switch (opt) {
 			case 'c':
