@@ -64,6 +64,7 @@ clone(const std::filesystem::path &opt_cache_dir, const std::string &dir, const 
 {
 	if (!std::filesystem::is_regular_file(source))
 		throw std::runtime_error("error: cannot read " + source);
+
 	YAML::Node file = YAML::LoadFile(source);
 
 	std::vector<std::string> token_key;
@@ -306,17 +307,17 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 	std::vector<Scheme> schemes;
 
 	if (make) {
-		bool good = false;
+		bool is_valid_dir = false;
 
 		for (const std::filesystem::directory_entry &file :
 		     std::filesystem::directory_iterator(opt_build_dir)) {
 			if (file.is_regular_file() && file.path().extension() == ".yaml") {
-				good = true;
+				is_valid_dir = true;
 				break;
 			}
 		}
 
-		if (good) {
+		if (is_valid_dir) {
 			std::vector<Scheme> parse_scheme = get_scheme(opt_build_dir);
 			schemes.insert(schemes.begin(), parse_scheme.begin(), parse_scheme.end());
 		} else {
@@ -415,6 +416,7 @@ build(const std::filesystem::path &opt_cache_dir, const std::vector<std::string>
 			} catch (std::exception const &e) {
 				std::cerr << "error: cannot create " << output_dir << "base16-"
 					  << s.slug << t.extension << std::endl;
+				continue;
 			}
 		}
 	}
